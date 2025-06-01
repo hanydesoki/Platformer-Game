@@ -55,7 +55,6 @@ class Impact(Camera):
 
     def update(self) -> None:
         if self.active:
-            print(self.base_size, self.size)
             self.base_size = max(self.base_size - 0.2, 0)
             self.size += 0.2
 
