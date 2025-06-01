@@ -1,4 +1,6 @@
 import os
+import random
+import math
 
 import pygame
 
@@ -8,6 +10,7 @@ from .player import Player
 from .animation import Animation
 from .bullet import Bullet
 from .enemy import Enemy
+from .impact import Impact
 
 class Game:
 
@@ -51,6 +54,8 @@ class Game:
         self.enemies: list[Enemy] = [
             Enemy(self.display, (400, 352), self, self.animations["Enemy/Idle"].copy())
         ]
+
+        self.impacts: list[Impact] = []
 
     def load_assets(self, asset_path: str) -> None:
         self.assets = {}
@@ -97,7 +102,16 @@ class Game:
                 # print(collided_tile)
                 if collided_tile["tile_type"] in self.collision_tiles:
                     self.bullets.remove(bullet)
-
+                    for _ in range(random.randint(3, 6)):
+                        new_impact = Impact(
+                            self.display,
+                            (bullet.x, bullet.y),
+                            random.randint(6, 12),
+                            random.random() * 2,
+                            random.random() * 2 * math.pi,
+                            color=(255, 255, 150)
+                        )
+                        self.impacts.append(new_impact)
                     continue
 
             bullet.draw()
@@ -105,7 +119,15 @@ class Game:
     def manage_enemies(self) -> None:
         for enemy in self.enemies[:]:
             enemy.update()
-            enemy.draw()            
+            enemy.draw()
+
+    def manage_impacts(self) -> None:
+        for impact in self.impacts[:]:
+            impact.update() 
+            impact.draw()
+
+            if not impact.active:
+                self.impacts.remove(impact)            
 
     def run(self) -> None:
         
@@ -133,6 +155,7 @@ class Game:
 
             self.manage_enemies()
             self.manage_bullets()
+            self.manage_impacts()
 
             self.window.blit(
                 pygame.transform.scale(self.display, (self.disp_size[0] * 2, self.disp_size[1] * 2)), 
