@@ -9,7 +9,7 @@ class Entity(Camera):
     gravity = 0.4
     slow_down = 1
 
-    def __init__(self, surface: pygame.Surface, pos: tuple[int, int], game, animation: Animation = None) -> None:
+    def __init__(self, surface: pygame.Surface, pos: tuple[int, int], game, animation: Animation = None, max_hp: int = 1) -> None:
         super().__init__()
 
         self.surface = surface
@@ -42,6 +42,16 @@ class Entity(Camera):
         self.jump_vel_y = -8
 
         self.flip: bool = False
+
+        self.max_hp = max_hp
+        self.hp = self.max_hp
+
+    def get_hit(self, damage: int) -> None:
+        self.hp = max(self.hp - damage, 0)
+
+    @property
+    def alive(self) -> bool:
+        return self.hp > 0
 
     def update_position(self) -> None:
         
