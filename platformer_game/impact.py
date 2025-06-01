@@ -13,7 +13,9 @@ class Impact(Camera):
             pos: tuple[float, float], 
             size: float, 
             base_size: float, 
-            angle: float, 
+            angle: float,
+            speed: float = 0,
+            dissipation: float = 0.2, 
             color="white"
         ):
         super().__init__()
@@ -25,6 +27,9 @@ class Impact(Camera):
         self.angle = angle
 
         self.color = color
+
+        self.speed = speed
+        self.dissipation = dissipation
 
         self.x_comp = math.cos(self.angle)
         self.y_comp = math.sin(self.angle)
@@ -55,7 +60,9 @@ class Impact(Camera):
 
     def update(self) -> None:
         if self.active:
-            self.base_size = max(self.base_size - 0.2, 0)
-            self.size += 0.2
+            self.x += self.x_comp * self.speed
+            self.y += self.y_comp * self.speed
+            self.base_size = max(self.base_size - self.dissipation, 0)
+            self.size += self.dissipation
 
 

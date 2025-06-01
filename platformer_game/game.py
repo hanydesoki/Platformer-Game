@@ -109,7 +109,9 @@ class Game:
                             random.randint(6, 12),
                             random.random() * 2,
                             random.random() * 2 * math.pi,
-                            color=(255, 255, 150)
+                            color=(255, 255, 150),
+                            speed=1,
+                            dissipation=0.2
                         )
                         self.impacts.append(new_impact)
                     continue
