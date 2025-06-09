@@ -73,7 +73,7 @@ class TileMap(Camera):
         tile_key = self.get_tile_key(indexes)
         self.grasses[tile_key] = {
             "indexes": indexes,
-            "coord": (indexes[0] * self.tilesize, indexes[1] * (0.5 + self.tilesize))
+            "coord": (indexes[0] * self.tilesize, indexes[1] * self.tilesize)
         }
 
     def delete_grass(self, indexes: tuple[int, int]) -> None:

@@ -64,13 +64,13 @@ class Game:
         for tile_key, grass_obj in self.tilemap.grasses.items():
             x, y = grass_obj["coord"]
             self.grasses[tile_key] = []
-            for _ in range(random.randint(3, 7)):
+            for _ in range(random.randint(4, 10)):
                 grass_blade = GrassBlade(
                     self.display,
                     self,
                     (
-                        x + random.randint(-self.tilemap.tilesize // 2, self.tilemap.tilesize // 2),
-                        y + self.tilemap.tilesize // 4
+                        x + random.randint(3, self.tilemap.tilesize - 3),
+                        y + self.tilemap.tilesize
                     )
                 )
                 self.grasses[tile_key].append(grass_blade)
@@ -262,8 +262,8 @@ class Game:
             self.manage_bullets()
             self.manage_impacts()
 
-            # self.manage_grasses()
-            # self.draw_grasses()
+            self.manage_grasses()
+            self.draw_grasses()
 
             self.tilemap.draw_tiles()
 

@@ -44,13 +44,20 @@ class GrassBlade(Camera):
 
     def draw(self) -> None:
         # print(self.convert_pos(self.rect.topleft))
-        self.surface.blit(self.surf, self.convert_pos((self.x, self.y)))
+        self.surface.blit(self.surf, self.convert_pos(self.rect.topleft))
 
     def update_angle(self, source_pos: tuple[int, int]) -> None:
-        
         dist = math.dist(source_pos, self.rect.center)
 
-        self.angle = 80 * int(max(self.game.tilemap.tilesize - dist, 0)) * (-1 if source_pos[0] > self.rect.centerx else 1)
-
-        self.surf = pygame.transform.rotozoom(self.original_surf, self.angle, 1)
+        self.angle = 80 * int(max((self.game.tilemap.tilesize - dist), 0)) / self.game.tilemap.tilesize * (-1 if source_pos[0] < self.rect.centerx else 1)
+        
+        self.surf = pygame.transform.rotate(self.original_surf, self.angle)
         self.surf.set_colorkey("black")
+        self.rect = self.surf.get_rect(center=(self.x, self.y))
+
+        # pygame.draw.circle(
+        #     self.surface,
+        #     "red",
+        #     self.convert_pos((self.rect.center)),
+        #     2
+        # )
