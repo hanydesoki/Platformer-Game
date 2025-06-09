@@ -12,6 +12,7 @@ from .animation import Animation
 from .bullet import Bullet
 from .enemy import Enemy
 from .impact import Impact
+from .grass_blade import GrassBlade
 
 class Game:
 
@@ -52,19 +53,29 @@ class Game:
         
         self.bullets: list[Bullet] = []
         
-        # self.enemies: list[Enemy] = [
-        #     Enemy(self.display, (400, 352), self, self.animations["Enemy/Idle"].copy()),
-        #     Enemy(self.display, (1045, 500), self, self.animations["Enemy/Idle"].copy()),
-        #     Enemy(self.display, (1028, 308), self, self.animations["Enemy/Idle"].copy()),
-        #     Enemy(self.display, (775, 211), self, self.animations["Enemy/Idle"].copy()),
-        #     Enemy(self.display, (660, 560), self, self.animations["Enemy/Idle"].copy()),
-        # ]
 
         self.enemies: list[Enemy] = [
             Enemy(self.display, enemy["coord"], self, self.animations["Enemy/Idle"].copy())
             for enemy in self.tilemap.enemies.values()
         ]
 
+        self.grasses: dict[str, list[GrassBlade]] = {}
+
+        for tile_key, grass_obj in self.tilemap.grasses.items():
+            x, y = grass_obj["coord"]
+            self.grasses[tile_key] = []
+            for _ in range(random.randint(3, 7)):
+                grass_blade = GrassBlade(
+                    self.display,
+                    self,
+                    (
+                        x + random.randint(-self.tilemap.tilesize // 2, self.tilemap.tilesize // 2),
+                        y + self.tilemap.tilesize // 4
+                    )
+                )
+                self.grasses[tile_key].append(grass_blade)
+
+        # print(self.grasses)
 
         self.impacts: list[Impact] = []
 
@@ -207,7 +218,22 @@ class Game:
             impact.draw()
 
             if not impact.active:
-                self.impacts.remove(impact)            
+                self.impacts.remove(impact)
+
+    def manage_grasses(self) -> None:
+        current_index = self.player.get_current_index()
+        for index_offset in self.tilemap.offset_corners + [(0, 0)] + [(-1, -2), (0, -2), (1, -2)]:
+            neighbors_indexes = (current_index[0] + index_offset[0], current_index[1] + index_offset[1])
+            tile_key = self.tilemap.get_tile_key(neighbors_indexes)
+
+            for grass_blade in  self.grasses.get(tile_key, []):
+                grass_blade.update_angle(self.player.rect.midbottom)
+                    
+
+    def draw_grasses(self) -> None:
+        for grass_tile in self.grasses.values():
+            for grass_blade in grass_tile:
+                grass_blade.draw()
 
     def run(self) -> None:
         
@@ -228,14 +254,18 @@ class Game:
 
             self.display.fill((100, 200, 255))
 
-            self.tilemap.draw_tiles()
-
+            
             self.player.update()
             self.player.draw()
 
             self.manage_enemies()
             self.manage_bullets()
             self.manage_impacts()
+
+            # self.manage_grasses()
+            # self.draw_grasses()
+
+            self.tilemap.draw_tiles()
 
             self.window.blit(
                 pygame.transform.scale(self.display, (self.disp_size[0] * 2, self.disp_size[1] * 2)), 
