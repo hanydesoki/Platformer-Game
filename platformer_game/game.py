@@ -13,6 +13,7 @@ from .bullet import Bullet
 from .enemy import Enemy
 from .impact import Impact
 from .grass_blade import GrassBlade
+from .cloud import Cloud
 
 class Game:
 
@@ -78,6 +79,23 @@ class Game:
         # print(self.grasses)
 
         self.impacts: list[Impact] = []
+
+        self.clouds: list[Cloud] = []
+
+        cloud_surfs = load_folder("Assets/Other/Clouds")
+
+        for _ in range(20):
+            cloud = Cloud(
+                self.display,
+                random.choice(cloud_surfs),
+                (random.randint(0, self.display.get_width()), random.randint(0, self.display.get_height())),
+                depth=0.03 + random.random() * 0.50,
+                speed=random.random() * 0.5 + 0.3
+            )
+
+            self.clouds.append(cloud)
+
+        self.clouds.sort(key=lambda c: c.depth)
 
     def load_assets(self, asset_path: str) -> None:
         self.assets = {}
@@ -233,6 +251,12 @@ class Game:
             for grass_blade in grass_tile:
                 grass_blade.draw()
 
+    def update_clouds(self) -> None:
+        for cloud in self.clouds:
+            cloud.update_pos()
+            cloud.draw()
+            # print(cloud.x, cloud.y)
+
     def run(self) -> None:
         
         while self.game_loop:
@@ -251,7 +275,7 @@ class Game:
             self.manage_player_controls(key_pressed, all_events)
 
             self.display.fill((100, 200, 255))
-
+            self.update_clouds()
             
             self.player.update()
             self.player.draw()
