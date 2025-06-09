@@ -49,7 +49,7 @@ class GrassBlade(Camera):
     def update_angle(self, source_pos: tuple[int, int]) -> None:
         dist = math.dist(source_pos, self.rect.center)
 
-        self.angle = 80 * int(max((self.game.tilemap.tilesize - dist), 0)) / self.game.tilemap.tilesize * (-1 if source_pos[0] < self.rect.centerx else 1)
+        self.angle = 40 * int(max((self.game.tilemap.tilesize - dist), 0)) / self.game.tilemap.tilesize * (-1 if source_pos[0] < self.rect.centerx else 1)
         
         self.surf = pygame.transform.rotate(self.original_surf, self.angle)
         self.surf.set_colorkey("black")
