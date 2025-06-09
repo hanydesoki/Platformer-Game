@@ -99,6 +99,10 @@ class LevelEditor(Camera):
         self.player_surf.fill("green")
         self.player_surf.set_alpha(50)
 
+        self.grass_surf = pygame.image.load("Assets/Other/grass.png").convert()
+        self.grass_surf.set_alpha(150)
+        self.grass_surf.set_colorkey("black")
+
     def switch_selection_mode(self) -> None:
 
         self.selection_mode = not self.selection_mode
@@ -202,6 +206,9 @@ class LevelEditor(Camera):
                 if event.key == pygame.K_p:
                     self.tilemap.set_player(self.coord_to_indexes(pygame.mouse.get_pos()))
 
+                if event.key == pygame.K_g:
+                    self.tilemap.set_grass(self.coord_to_indexes(pygame.mouse.get_pos()))
+
                 # Fill
                 if event.key == pygame.K_f and self.selection_1 is not None and self.selection_2 is not None:
                     self.selected_tiles.clear()
@@ -275,6 +282,9 @@ class LevelEditor(Camera):
                             self.coord_to_indexes(pygame.mouse.get_pos()),
                         )
                     self.tilemap.delete_enemy(
+                        self.coord_to_indexes(pygame.mouse.get_pos()),
+                    )
+                    self.tilemap.delete_grass(
                         self.coord_to_indexes(pygame.mouse.get_pos()),
                     )
 
@@ -475,6 +485,10 @@ class LevelEditor(Camera):
             # )
 
             self.tilemap.draw_tiles()
+
+            for grass in self.tilemap.grasses.values():
+                coord = grass["indexes"][0] * self.tilesize, grass["indexes"][1] * self.tilesize
+                self.display.blit(self.grass_surf, self.convert_pos(coord))
 
             for enemy in self.tilemap.enemies.values():
                 coord = enemy["indexes"][0] * self.tilesize, enemy["indexes"][1] * self.tilesize

@@ -10,4 +10,4 @@ def main(edit_mode: bool = False):
         game.run()
 
 if __name__ == "__main__":
-    main(edit_mode=False)
+    main(edit_mode=True)

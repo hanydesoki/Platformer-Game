@@ -3,7 +3,6 @@ import json
 import pygame
 
 from .camera import Camera
-from .enemy import Enemy
 
 
 class TileMap(Camera):
@@ -18,7 +17,8 @@ class TileMap(Camera):
 
         self.tiles: dict[str, dict] = {}
         self.offgrid_elements: list[dict] = []
-        self.enemies: dict[str, Enemy] = {}
+        self.enemies: dict[str, dict] = {}
+        self.grasses: dict[str, dict] = {}
 
         self.player: dict = {"indexes": (0, 0), "coord": (self.tilesize // 2, self.tilesize)}
 
@@ -67,6 +67,18 @@ class TileMap(Camera):
             "coord": (indexes[0] * self.tilesize + self.tilesize // 2, indexes[1] * (1 + self.tilesize))
         }
 
+    def set_grass(self, indexes: tuple[int, int]) -> None:
+        tile_key = self.get_tile_key(indexes)
+        self.grasses[tile_key] = {
+            "indexes": indexes,
+            "coord": (indexes[0] * self.tilesize + self.tilesize // 2, indexes[1] * (1 + self.tilesize))
+        }
+
+    def delete_grass(self, indexes: tuple[int, int]) -> None:
+        tile_key = self.get_tile_key(indexes)
+        if tile_key in self.grasses:
+            del self.grasses[tile_key]
+
     def draw_tiles(self) -> None:
 
         start_x_index = int(Camera.offset_x // self.tilesize)
@@ -96,6 +108,7 @@ class TileMap(Camera):
         self.tiles = map_obj.get("tiles", {})
         self.offgrid_elements = map_obj.get("offgrid_elements", [])
         self.enemies = map_obj.get("enemies", {})
+        self.grasses = map_obj.get("grasses", {})
         
         player = map_obj.get("player", None)
 
@@ -108,6 +121,7 @@ class TileMap(Camera):
             "tiles": self.tiles,
             "offgrid_elements": self.offgrid_elements,
             "enemies": self.enemies,
+            "grasses": self.grasses,
             "player": self.player
         }
 
