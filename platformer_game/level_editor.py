@@ -42,6 +42,8 @@ class LevelEditor(Camera):
 
     base_camera_speed = 3
 
+    
+
     def __init__(self, filepath: str = None, tilesize: int = 36):
 
         pygame.init()
@@ -88,6 +90,15 @@ class LevelEditor(Camera):
 
         self.debugguer_font = pygame.font.SysFont("Arial", 12, True)
 
+
+        self.enemy_surf = pygame.Surface((self.tilemap.tilesize, self.tilemap.tilesize))
+        self.enemy_surf.fill("red")
+        self.enemy_surf.set_alpha(50)
+
+        self.player_surf = pygame.Surface((self.tilemap.tilesize, self.tilemap.tilesize))
+        self.player_surf.fill("green")
+        self.player_surf.set_alpha(50)
+
     def switch_selection_mode(self) -> None:
 
         self.selection_mode = not self.selection_mode
@@ -99,45 +110,6 @@ class LevelEditor(Camera):
         self.selected_tiles: list[dict] = None
 
         self.select_dragging = False
-
-
-    # def set_selection_coord(self, pos: tuple[int, int]) -> None:
-    #     pos = self.convert_pos(pos)
-    #     # Reset selection
-    #     if (
-    #         self.top_left_selection is None
-    #         or (self.top_left_selection is not None and self.bottom_right_selection is not None)
-    #     ):
-    #         self.top_left_selection = pos
-    #         self.bottom_right_selection = None
-    #         self.selected_tiles = None
-
-    #         self.select_dragging = True
-
-    #     # Bottom right selection (also work with negative width / height)
-    #     elif (
-    #         self.top_left_selection is not None
-    #         and self.bottom_right_selection is None
-    #     ):
-    #         left = min(pos[0], self.top_left_selection[0])
-    #         top = min(pos[1], self.top_left_selection[1])
-
-    #         width = abs(pos[0] - self.top_left_selection[0])
-    #         height = abs(pos[1] - self.top_left_selection[1])
-
-    #         self.top_left_selection = (left, top)
-    #         self.bottom_right_selection = (left + width, top + height)
-
-    #         self.selected_tiles = []
-    #         for i, j in self.get_selected_indexes():
-    #             tile_key = self.tilemap.get_tile_key((i, j))
-
-    #             if tile_key in self.tilemap.tiles:
-    #                 self.selected_tiles.append(self.tilemap.get_tile((i, j)))
-
-    #         self.select_dragging = False
-
-    #     print(self.top_left_selection, self.bottom_right_selection)
             
 
     def get_selected_indexes(self) -> list[tuple[int, int]]:
@@ -224,6 +196,12 @@ class LevelEditor(Camera):
                 if event.key == pygame.K_a and self.selected_tiles is not None:
                     self.autotile(self.selected_tiles)
 
+                if event.key == pygame.K_e:
+                    self.tilemap.set_enemy(self.coord_to_indexes(pygame.mouse.get_pos()))
+
+                if event.key == pygame.K_p:
+                    self.tilemap.set_player(self.coord_to_indexes(pygame.mouse.get_pos()))
+
                 # Fill
                 if event.key == pygame.K_f and self.selection_1 is not None and self.selection_2 is not None:
                     self.selected_tiles.clear()
@@ -296,6 +274,9 @@ class LevelEditor(Camera):
                     self.tilemap.delete_tile(
                             self.coord_to_indexes(pygame.mouse.get_pos()),
                         )
+                    self.tilemap.delete_enemy(
+                        self.coord_to_indexes(pygame.mouse.get_pos()),
+                    )
 
                 # print(self.tilemap.tiles)
 
@@ -494,6 +475,15 @@ class LevelEditor(Camera):
             # )
 
             self.tilemap.draw_tiles()
+
+            for enemy in self.tilemap.enemies.values():
+                coord = enemy["indexes"][0] * self.tilesize, enemy["indexes"][1] * self.tilesize
+                self.display.blit(self.enemy_surf, self.convert_pos(coord))
+
+            self.display.blit(
+                self.player_surf, 
+                self.convert_pos((self.tilemap.player["indexes"][0] * self.tilesize, self.tilemap.player["indexes"][1] * self.tilesize))
+            )
 
             if not self.selection_mode:
                 self.display.blit(current_tile, mouse_rect)

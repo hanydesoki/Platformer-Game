@@ -48,17 +48,23 @@ class Game:
 
         self.tilemap.load_tiles("my_map.json")
 
-        self.player = Player(self.display, (200, 652), self, self.animations["Player/Idle"].copy())
-
+        self.player = Player(self.display, self.tilemap.player["coord"], self, self.animations["Player/Idle"].copy())
+        
         self.bullets: list[Bullet] = []
         
+        # self.enemies: list[Enemy] = [
+        #     Enemy(self.display, (400, 352), self, self.animations["Enemy/Idle"].copy()),
+        #     Enemy(self.display, (1045, 500), self, self.animations["Enemy/Idle"].copy()),
+        #     Enemy(self.display, (1028, 308), self, self.animations["Enemy/Idle"].copy()),
+        #     Enemy(self.display, (775, 211), self, self.animations["Enemy/Idle"].copy()),
+        #     Enemy(self.display, (660, 560), self, self.animations["Enemy/Idle"].copy()),
+        # ]
+
         self.enemies: list[Enemy] = [
-            Enemy(self.display, (400, 352), self, self.animations["Enemy/Idle"].copy()),
-            Enemy(self.display, (1045, 500), self, self.animations["Enemy/Idle"].copy()),
-            Enemy(self.display, (1028, 308), self, self.animations["Enemy/Idle"].copy()),
-            Enemy(self.display, (775, 211), self, self.animations["Enemy/Idle"].copy()),
-            Enemy(self.display, (660, 560), self, self.animations["Enemy/Idle"].copy()),
+            Enemy(self.display, enemy["coord"], self, self.animations["Enemy/Idle"].copy())
+            for enemy in self.tilemap.enemies.values()
         ]
+
 
         self.impacts: list[Impact] = []
 
