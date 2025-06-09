@@ -120,31 +120,22 @@ class Game:
 
             collided_tile = self.tilemap.get_tile(bullet.current_index())
 
+            # Check Bullet hit tile
             if collided_tile is not None:
-                # print(collided_tile)
                 if collided_tile["tile_type"] in self.collision_tiles:
                     self.bullets.remove(bullet)
-                    # for _ in range(random.randint(3, 6)):
-                    #     new_impact = Impact(
-                    #         self.display,
-                    #         (bullet.x, bullet.y),
-                    #         random.randint(6, 12),
-                    #         random.random() * 2,
-                    #         random.random() * 2 * math.pi,
-                    #         color=(255, 255, 150),
-                    #         speed=1,
-                    #         dissipation=0.2
-                    #     )
-                    #     self.impacts.append(new_impact)
+
                     self.spawn_impacts(
                         5, 
                         (bullet.x, bullet.y), 
                         (6, 12), 
                         (0, 2), 
-                        (255, 255, 150)
+                        (255, 255, 150),
+                        speed=(0.5, 3)
                     )
                     continue
             
+            # Check Bullet hit enemy
             if bullet.owner == self.player:
                 for enemy in self.enemies[:]:
                     if enemy.rect.collidepoint((bullet.x, bullet.y)):
@@ -155,10 +146,12 @@ class Game:
                             (4, 5), 
                             (0, 2), 
                             (150, 0, 0),
-                            dissipation=0.4
+                            dissipation=0.4,
+                            speed=(0.5, 3)
                         )
                         self.bullets.remove(bullet)
             else:
+                # Check bullet hit player
                 if self.player.rect.collidepoint((bullet.x, bullet.y)):
                     self.bullets.remove(bullet)
                     self.player.get_hit(1)
@@ -168,7 +161,8 @@ class Game:
                             (4, 5), 
                             (0, 2), 
                             (150, 0, 0),
-                            dissipation=0.4
+                            dissipation=0.4,
+                            speed=(0.5, 3)
                         )
 
             bullet.draw()
@@ -179,10 +173,13 @@ class Game:
                     size_range: tuple[float, float],
                     base_size_range: tuple[float, float],
                     color="white",
-                    speed: float = 1,
+                    speed: tuple[float, float] = (1, 1),
                     dissipation: float = 0.2
                 ) -> list[Impact]:
         for _ in range(n):
+            
+            impact_speed = speed[0] + random.random() * (speed[1] - speed[0])
+
             new_impact = Impact(
                 self.display,
                 (pos),
@@ -190,7 +187,7 @@ class Game:
                 base_size_range[0] + random.random() * (base_size_range[1] - base_size_range[0]),
                 random.random() * 2 * math.pi,
                 color=color,
-                speed=speed,
+                speed=impact_speed,
                 dissipation=dissipation
             )
             self.impacts.append(new_impact)
@@ -207,7 +204,8 @@ class Game:
                     (10, 20), 
                     (3, 5), 
                     (150, 0, 0),
-                    dissipation=0.05
+                    dissipation=0.05,
+                    speed=(0.5, 3)
                 )
                 Camera.shake_screen(10)
                 self.enemies.remove(enemy)
