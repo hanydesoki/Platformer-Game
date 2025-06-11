@@ -104,7 +104,8 @@ class Game:
         self.tilemap.load_tiles(level_path)
 
         self.player = Player(self.display, self.tilemap.player["coord"], self, self.animations["Player/Idle"].copy())
-        
+        Camera.offset_x = self.player.rect.centerx - self.tilemap.surface.get_width() // 4
+        Camera.offset_y = self.player.rect.centery - self.tilemap.surface.get_height() // 4
         self.bullets: list[Bullet] = []
         
 
