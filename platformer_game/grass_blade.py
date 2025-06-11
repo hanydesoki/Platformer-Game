@@ -33,7 +33,7 @@ class GrassBlade(Camera):
             [
                 (self.game.tilemap.tilesize // 2 - 3, self.game.tilemap.tilesize // 2 + 3),
                 (self.game.tilemap.tilesize // 2 + 3, self.game.tilemap.tilesize // 2 + 3),
-                (self.game.tilemap.tilesize // 2 + random.randint(-3, 3), 2),
+                (self.game.tilemap.tilesize // 2 + random.randint(-3, 3), random.randint(0, 5)),
             ]
         )
 

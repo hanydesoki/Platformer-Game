@@ -1,4 +1,5 @@
 import math
+import random
 
 import pygame
 
@@ -22,6 +23,9 @@ class Enemy(Entity):
         self.player_spotted: bool = False
 
         self.shoot_cooldown: int = 0
+
+        self.movement_status: str = "stop"
+        self.movement_frame: int = 0
     
 
     def set_status(self, status: str) -> None:
@@ -110,9 +114,52 @@ class Enemy(Entity):
         return False
     
     def manage_ai(self) -> None:
+
+        self.movement_frame = max(self.movement_frame - 1, 0)
+
+        if self.movement_frame == 0:
+            self.movement_status = "stop"
+
         if self.player_spotted and self.shoot_cooldown <= 0:
             self.shoot()
             self.shoot_cooldown = 120
+            self.movement_status = "stop"
+            self.movement_frame = 0
+            
+        if self.movement_status == "stop" and random.random() < 0.01:
+            self.movement_status = random.choice(["left", "right"])
+            self.x_comp = -1 if self.movement_status == "left" else 1
+            self.y_comp = 0
+            self.movement_frame = random.randint(30, 45)
+
+        
+        if self.movement_status in ["left", "right"]:
+            
+            current_index = self.get_current_index()
+
+            # Stop enemy movement if the he is close to an edge or wall.  
+            front_tile = self.game.tilemap.get_tile((current_index[0] + (-1 if self.movement_status == "left" else 1), current_index[1]))
+            front_bottom_tile = self.game.tilemap.get_tile((current_index[0] + (-1 if self.movement_status == "left" else 1), current_index[1] + 1))
+
+            if front_tile is not None:
+                if front_tile["variant"] in self.game.collision_tiles:
+                    self.movement_status = "stop"
+                    self.movement_frame = 0
+                    return
+                
+            if front_tile is None:
+                if front_bottom_tile is not None:
+                    if front_bottom_tile["variant"] not in self.game.collision_tiles:
+                        self.movement_status = "stop"
+                        self.movement_frame = 0
+                        return
+                else:
+                    self.movement_status = "stop"
+                    self.movement_frame = 0
+                    return
+
+            self.move_sideway(-1 if self.movement_status == "left" else 1)
+
 
     def draw_aim(self) -> None:
         start_pos = self.rect.center
@@ -140,6 +187,7 @@ class Enemy(Entity):
         self.manage_ai()
         self.draw_aim()
         super().update()
+
         # print(self.player_spotted)
         # print((self.x, self.y), self.rect.midbottom, (self.offset_x, self.offset_y))
     
