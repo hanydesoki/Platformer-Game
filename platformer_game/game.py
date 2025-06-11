@@ -80,6 +80,9 @@ class Game:
 
         self.impacts: list[Impact] = []
 
+        self.in_level_transition: bool = False
+        self.level_transition_frames: int = 0
+
         self.clouds: list[Cloud] = []
 
         cloud_surfs = load_folder("Assets/Other/Clouds")
@@ -96,6 +99,39 @@ class Game:
             self.clouds.append(cloud)
 
         self.clouds.sort(key=lambda c: c.depth)
+
+    def load_level(self, level_path: str) -> None:
+        self.tilemap.load_tiles(level_path)
+
+        self.player = Player(self.display, self.tilemap.player["coord"], self, self.animations["Player/Idle"].copy())
+        
+        self.bullets: list[Bullet] = []
+        
+
+        self.enemies: list[Enemy] = [
+            Enemy(self.display, enemy["coord"], self, self.animations["Enemy/Idle"].copy())
+            for enemy in self.tilemap.enemies.values()
+        ]
+
+        self.grasses: dict[str, list[GrassBlade]] = {}
+
+        for tile_key, grass_obj in self.tilemap.grasses.items():
+            x, y = grass_obj["coord"]
+            self.grasses[tile_key] = []
+            for _ in range(random.randint(4, 10)):
+                grass_blade = GrassBlade(
+                    self.display,
+                    self,
+                    (
+                        x + random.randint(3, self.tilemap.tilesize - 3),
+                        y + self.tilemap.tilesize
+                    )
+                )
+                self.grasses[tile_key].append(grass_blade)
+
+        # print(self.grasses)
+
+        self.impacts: list[Impact] = []
 
     def load_assets(self, asset_path: str) -> None:
         self.assets = {}
@@ -182,6 +218,18 @@ class Game:
                             dissipation=0.4,
                             speed=(0.5, 3)
                         )
+                    if not self.player.alive:
+                        self.spawn_impacts(
+                            15, 
+                            self.player.rect.center, 
+                            (10, 20), 
+                            (3, 5), 
+                            (150, 0, 0),
+                            dissipation=0.05,
+                            speed=(0.5, 3)
+                        )
+                        Camera.shake_screen(10)
+                    
 
             bullet.draw()
 
@@ -257,6 +305,39 @@ class Game:
             cloud.draw()
             # print(cloud.x, cloud.y)
 
+    def manage_game_over(self) -> None:
+        if len(self.enemies) == 0 and not self.in_level_transition:
+            self.level_transition_frames = -60
+            self.in_level_transition = True
+
+        elif not self.player.alive and not self.in_level_transition:
+            self.level_transition_frames = -60
+            self.in_level_transition = True
+
+    def manage_and_draw_level_transition(self) -> None:
+        if not self.in_level_transition: return
+
+        self.level_transition_frames = self.level_transition_frames + 1
+
+        if self.level_transition_frames >= 60:
+            self.in_level_transition = False
+            self.level_transition_frames = -60
+
+        if self.level_transition_frames == 0:
+            self.load_level("my_map.json")
+
+        surf = pygame.Surface(self.window.get_size())
+        pygame.draw.circle(
+            surf,
+            "red",
+            (surf.get_width() // 2, surf.get_height() // 2),
+            (abs(self.level_transition_frames) / 60) * max(surf.get_size())
+        )
+        # print((abs(self.level_transition_frames) / 60) * max(surf.get_size()))
+        surf.set_colorkey("red")
+
+        self.window.blit(surf, (0, 0))
+
     def run(self) -> None:
         
         while self.game_loop:
@@ -288,12 +369,14 @@ class Game:
             self.draw_grasses()
 
             self.tilemap.draw_tiles()
-
+            self.manage_game_over()
+            
             self.window.blit(
                 pygame.transform.scale(self.display, (self.disp_size[0] * 2, self.disp_size[1] * 2)), 
                 (0, 0)
             )
             Camera.update_shake()
+            self.manage_and_draw_level_transition()
             pygame.display.update()
 
             self.clock.tick(60)

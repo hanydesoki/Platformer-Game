@@ -144,7 +144,8 @@ class Entity(Camera):
         return int(self.x // self.game.tilemap.tilesize), int(self.y // self.game.tilemap.tilesize)
 
     def draw(self) -> None:
-        self.surface.blit(self.surf, self.convert_pos(self.rect.topleft))
+        if self.alive:
+            self.surface.blit(self.surf, self.convert_pos(self.rect.topleft))
 
     def update_surf(self) -> None:
         
@@ -167,6 +168,7 @@ class Entity(Camera):
         self.x_vel = max(-self.max_speed, min(self.max_speed, self.x_vel))
 
     def update(self) -> None:
-        self.update_surf()
-        self.update_position()        
+        if self.alive:
+            self.update_surf()
+            self.update_position()        
 

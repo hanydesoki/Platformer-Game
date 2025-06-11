@@ -103,10 +103,11 @@ class Player(Entity):
     #     self.surf.set_colorkey("white")
 
     def update(self):
-        self.manage_status()
-        self.manage_aim()
-        self.draw_aim()
-        super().update()
-        
-        self.update_camera_pos()
+        if self.alive:
+            self.manage_status()
+            self.manage_aim()
+            self.draw_aim()
+            super().update()
+            
+            self.update_camera_pos()
     

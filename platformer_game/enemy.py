@@ -181,12 +181,13 @@ class Enemy(Entity):
 
 
     def update(self):
-        self.shoot_cooldown = max(self.shoot_cooldown - 1, 0)
-        self.manage_status()
-        self.manage_aim()
-        self.manage_ai()
-        self.draw_aim()
-        super().update()
+        if self.alive:
+            self.shoot_cooldown = max(self.shoot_cooldown - 1, 0)
+            self.manage_status()
+            self.manage_aim()
+            self.manage_ai()
+            self.draw_aim()
+            super().update()
 
         # print(self.player_spotted)
         # print((self.x, self.y), self.rect.midbottom, (self.offset_x, self.offset_y))
