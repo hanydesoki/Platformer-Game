@@ -19,11 +19,13 @@ class Game:
 
     collision_tiles = {"Dirt", "Stone"}
 
-    def __init__(self):
+    def __init__(self, level_selection, window: pygame.Surface, level_path: str):
 
-        pygame.init()
+        self.level_selection = level_selection
 
-        self.window: pygame.Surface = pygame.display.set_mode()
+        self.window: pygame.Surface = window
+
+        self.level_path = level_path
 
         self.display = pygame.Surface(self.window.get_size())
 
@@ -48,7 +50,7 @@ class Game:
         
         self.tilemap = TileMap(self.display, assets=self.assets, tilesize=36)
 
-        self.tilemap.load_tiles("my_map.json")
+        self.tilemap.load_tiles(self.level_path)
 
         self.player = Player(self.display, self.tilemap.player["coord"], self, self.animations["Player/Idle"].copy())
         
@@ -325,7 +327,7 @@ class Game:
             self.level_transition_frames = -60
 
         if self.level_transition_frames == 0:
-            self.load_level("my_map.json")
+            self.load_level(self.level_path)
 
         surf = pygame.Surface(self.window.get_size())
         pygame.draw.circle(
@@ -382,5 +384,3 @@ class Game:
 
             self.clock.tick(60)
 
-        
-        pygame.quit()

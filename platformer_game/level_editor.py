@@ -44,15 +44,14 @@ class LevelEditor(Camera):
 
     
 
-    def __init__(self, filepath: str = None, tilesize: int = 36):
-
-        pygame.init()
- 
+    def __init__(self, level_selection, window: pygame.Surface, filepath: str = None, tilesize: int = 36):
+        
+        self.level_selection = level_selection
         self.filepath = filepath
         
         self.tilesize = tilesize
 
-        self.window: pygame.Surface = pygame.display.set_mode()
+        self.window: pygame.Surface = window
         self.display: pygame.Surface = pygame.Surface(self.window.get_size())
 
         self.clock = pygame.time.Clock()
@@ -511,6 +510,3 @@ class LevelEditor(Camera):
             pygame.display.update()
 
             self.clock.tick(60)
-
-        
-        pygame.quit()
