@@ -4,6 +4,9 @@ import pygame
 
 from .game import Game
 from .level_editor import LevelEditor
+from .button import Button
+from .camera import Camera
+from .popup import get_text_input
 
 
 class LevelSelection:
@@ -28,6 +31,22 @@ class LevelSelection:
 
         self.game: Game = None
         self.level_editor: LevelEditor = None
+
+        self.return_button = Button(
+            self.window,
+            "<",
+            40,
+            20,
+            (10, 10)
+        )
+
+        self.add_button = Button(
+            self.window,
+            "+",
+            40,
+            20,
+            (self.window.get_width() // 2 - 20, self.window.get_height() - 60)
+        )
 
         self.game_loop: bool = True
 
@@ -56,6 +75,10 @@ class LevelSelection:
             for surf, rect, _ in self.level_surf_rects:
                 self.window.blit(surf, rect)
 
+            self.return_button.draw()
+
+        self.add_button.draw()
+
 
     def manage_level_selection(self, all_events: list[pygame.event.Event]) -> None:
         left_clicked: bool = False
@@ -64,10 +87,19 @@ class LevelSelection:
         mouse_pos = pygame.mouse.get_pos()
         mouse_pressed = pygame.mouse.get_pressed()
 
+        key_pressed = pygame.key.get_pressed()
+
+        ctrl_pressed = key_pressed[pygame.K_LCTRL]
+
         for event in all_events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 left_clicked = mouse_pressed[0]
                 right_clicked = mouse_pressed[2]
+
+        if self.selected_level_set is not None:
+            if self.return_button.clicked():
+                self.selected_level_set = None
+                return
         
         # Chose level set
         if left_clicked and self.selected_level_set is None:
@@ -77,16 +109,23 @@ class LevelSelection:
 
         # Chose level
         elif left_clicked and self.selected_level_set is not None:
+
             for _, rect, level_name in self.level_surf_rects:
                 if rect.collidepoint(mouse_pos):
-                    # self.set_level_set(level_set)
-                    self.game = Game(self, self.window, os.path.join(self.folderpath, self.selected_level_set, level_name))
+                    if ctrl_pressed:
+                        self.level_editor = LevelEditor(self, self.window, os.path.join(self.folderpath, self.selected_level_set, level_name))
+                    else:
+                        self.game = Game(self, self.window, os.path.join(self.folderpath, self.selected_level_set, level_name))
 
         
+        if self.add_button.clicked():
+            text = get_text_input("Level set name")
+
+            print(text)
 
     def set_level_set(self, level_set: str) -> None:
         self.selected_level_set = level_set
-        self.level_set_surf_rects.clear()
+        self.level_surf_rects.clear()
 
         for i, level_name in enumerate(os.listdir(os.path.join(self.folderpath, level_set))):
             surf = pygame.Surface((int(self.window.get_width() * 0.7), 60))
@@ -100,8 +139,15 @@ class LevelSelection:
             self.level_surf_rects.append((surf, rect, level_name))
 
     def update(self, all_events: list[pygame.event.Event]) -> None:
+        if self.selected_level_set is not None:
+            self.return_button.update()
+
+        self.add_button.update()
+
         self.manage_level_selection(all_events)
         self.draw_level_menu()
+
+        
 
     def run(self) -> None:
         
@@ -121,9 +167,13 @@ class LevelSelection:
 
             if self.level_editor is not None:
                 self.level_editor.run()
+                self.level_editor = None
+                Camera.reset_camera()
 
             if self.game is not None:
                 self.game.run()
+                self.game = None
+                Camera.reset_camera()
 
             self.update(all_events)
 

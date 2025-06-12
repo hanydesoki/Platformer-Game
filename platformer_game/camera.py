@@ -31,10 +31,21 @@ class Camera:
             Camera.duration = max(Camera.duration - 1, 0)
 
         else:
-            Camera.max_duration = 1
             Camera.shake_x = 0
             Camera.shake_y = 0
+
+    @classmethod
+    def reset_camera(cls) -> None:
+        cls.offset_x: float = 0
+        cls.offset_y: float = 0
+
+        cls.shake_x: int = 0
+        cls.shake_y: int = 0
+
+        cls.duration: int = 0
 
     @property
     def camera_offset(self) -> tuple[float, float]:
         return Camera.offset_x, Camera.offset_y
+    
+    
