@@ -55,6 +55,7 @@ class LevelSelection:
         
 
     def generate_level_set_menu(self) -> None:
+        self.level_sets = os.listdir(self.folderpath)
         for i, level_set in enumerate(self.level_sets):
             surf = pygame.Surface((int(self.window.get_width() * 0.7), 60))
             surf.fill("gray")
@@ -119,9 +120,31 @@ class LevelSelection:
 
         
         if self.add_button.clicked():
-            text = get_text_input("Level set name")
+            text = get_text_input("Level set name" if self.selected_level_set is None else "Level name")
+            if text is None:
+                return
+            
+            if text.strip() == "":
+                return
+            
+            if self.selected_level_set is None:
+                self.create_level_set(text)
+            else:
+                self.create_level(self.selected_level_set, text)
 
-            print(text)
+    def create_level_set(self, level_set: str) -> None:
+        level_set_path = os.path.join(self.folderpath, level_set)
+        if not os.path.exists(level_set_path):
+            os.makedirs(level_set_path)
+            self.generate_level_set_menu()
+
+    def create_level(self, level_set: str, level_name: str) -> None:
+        level_path = os.path.join(self.folderpath, level_set, level_name + ".json")
+        if not os.path.exists(level_path):
+            LevelEditor(self, self.window, level_path).save_map()
+            self.set_level_set(self.selected_level_set)
+
+        
 
     def set_level_set(self, level_set: str) -> None:
         self.selected_level_set = level_set

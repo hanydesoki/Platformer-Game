@@ -57,7 +57,7 @@ def get_text_input(message: str, text_check: Callable = None) -> str | None:
             return None
         
         if ok_button.clicked():
-            return text
+            return text_input.text
         
         window.blit(pop_up_surf, pop_up_rect)
         window.blit(message_surf, message_rect)

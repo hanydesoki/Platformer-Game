@@ -207,6 +207,7 @@ class Game:
                             speed=(0.5, 3)
                         )
                         self.bullets.remove(bullet)
+                        break
             else:
                 # Check bullet hit player
                 if self.player.rect.collidepoint((bullet.x, bullet.y)):
