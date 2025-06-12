@@ -48,6 +48,17 @@ class Entity(Camera):
 
     def get_hit(self, damage: int) -> None:
         self.hp = max(self.hp - damage, 0)
+        if not self.alive:
+            self.game.spawn_impacts(
+                15, 
+                self.rect.center, 
+                (10, 20), 
+                (3, 5), 
+                (150, 0, 0),
+                dissipation=0.05,
+                speed=(0.5, 3)
+            )
+            Camera.shake_screen(10)
 
     @property
     def alive(self) -> bool:
@@ -167,8 +178,13 @@ class Entity(Camera):
 
         self.x_vel = max(-self.max_speed, min(self.max_speed, self.x_vel))
 
+    def check_oob(self) -> None:
+        if self.rect.bottom > self.game.tilemap.bottom_bound * self.game.tilemap.tilesize:
+            self.get_hit(self.hp)
+
     def update(self) -> None:
         if self.alive:
             self.update_surf()
-            self.update_position()        
+            self.update_position()  
+            self.check_oob()      
 

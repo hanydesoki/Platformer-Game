@@ -222,17 +222,17 @@ class Game:
                             dissipation=0.4,
                             speed=(0.5, 3)
                         )
-                    if not self.player.alive:
-                        self.spawn_impacts(
-                            15, 
-                            self.player.rect.center, 
-                            (10, 20), 
-                            (3, 5), 
-                            (150, 0, 0),
-                            dissipation=0.05,
-                            speed=(0.5, 3)
-                        )
-                        Camera.shake_screen(10)
+                    # if not self.player.alive:
+                    #     self.spawn_impacts(
+                    #         15, 
+                    #         self.player.rect.center, 
+                    #         (10, 20), 
+                    #         (3, 5), 
+                    #         (150, 0, 0),
+                    #         dissipation=0.05,
+                    #         speed=(0.5, 3)
+                    #     )
+                    #     Camera.shake_screen(10)
                     
 
             bullet.draw()
@@ -268,16 +268,16 @@ class Game:
             enemy.draw()
 
             if not enemy.alive:
-                self.spawn_impacts(
-                    15, 
-                    enemy.rect.center, 
-                    (10, 20), 
-                    (3, 5), 
-                    (150, 0, 0),
-                    dissipation=0.05,
-                    speed=(0.5, 3)
-                )
-                Camera.shake_screen(10)
+                # self.spawn_impacts(
+                #     15, 
+                #     enemy.rect.center, 
+                #     (10, 20), 
+                #     (3, 5), 
+                #     (150, 0, 0),
+                #     dissipation=0.05,
+                #     speed=(0.5, 3)
+                # )
+                # Camera.shake_screen(10)
                 self.enemies.remove(enemy)
 
     def manage_impacts(self) -> None:

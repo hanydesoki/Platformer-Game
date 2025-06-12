@@ -102,6 +102,7 @@ class LevelEditor(Camera):
         self.grass_surf.set_alpha(150)
         self.grass_surf.set_colorkey("black")
 
+
     def switch_selection_mode(self) -> None:
 
         self.selection_mode = not self.selection_mode
@@ -207,6 +208,9 @@ class LevelEditor(Camera):
 
                 if event.key == pygame.K_g:
                     self.tilemap.set_grass(self.coord_to_indexes(pygame.mouse.get_pos()))
+
+                if event.key == pygame.K_b:
+                    self.tilemap.bottom_bound = self.coord_to_indexes(pygame.mouse.get_pos())[1]
 
                 # Fill
                 if event.key == pygame.K_f and self.selection_1 is not None and self.selection_2 is not None:
@@ -422,6 +426,7 @@ class LevelEditor(Camera):
             f"Selection mode: {self.selection_mode}",
             f"Tile type: {self.tile_type}",
             f"Tile variant: {self.tile_variant_index + 1}",
+            f"Bottom bound: {self.tilemap.bottom_bound}"
         ]
         
 
@@ -431,7 +436,20 @@ class LevelEditor(Camera):
 
             self.display.blit(text_surf, text_rect)
 
-        
+    def draw_bottom_bound(self) -> None:
+        bottom_bound_y = self.tilemap.bottom_bound * self.tilesize
+
+        bottom_bound_y_camera = max(bottom_bound_y - Camera.offset_y, 0)
+
+        height = self.display.get_height() - bottom_bound_y_camera
+
+        if height > 0:
+            surf = pygame.Surface((self.window.get_width(), height))
+            surf.fill("purple")
+            surf.set_alpha(100)
+
+            self.display.blit(surf, (0, bottom_bound_y_camera))
+    
     def save_map(self) -> None:
         if self.filepath is None:
             self.filepath = f"map_{datetime.datetime.now().isoformat().replace(':', '-').replace('.', '-')}.json"
@@ -497,6 +515,8 @@ class LevelEditor(Camera):
                 self.player_surf, 
                 self.convert_pos((self.tilemap.player["indexes"][0] * self.tilesize, self.tilemap.player["indexes"][1] * self.tilesize))
             )
+
+            self.draw_bottom_bound()
 
             if not self.selection_mode:
                 self.display.blit(current_tile, mouse_rect)

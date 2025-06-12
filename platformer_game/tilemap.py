@@ -19,6 +19,7 @@ class TileMap(Camera):
         self.offgrid_elements: list[dict] = []
         self.enemies: dict[str, dict] = {}
         self.grasses: dict[str, dict] = {}
+        self.bottom_bound: int = 500
 
         self.player: dict = {"indexes": (0, 0), "coord": (self.tilesize // 2, self.tilesize)}
 
@@ -111,6 +112,7 @@ class TileMap(Camera):
         self.offgrid_elements = map_obj.get("offgrid_elements", [])
         self.enemies = map_obj.get("enemies", {})
         self.grasses = map_obj.get("grasses", {})
+        self.bottom_bound = map_obj.get("bottom_bound", 500)
         
         player = map_obj.get("player", None)
 
@@ -124,6 +126,7 @@ class TileMap(Camera):
             "offgrid_elements": self.offgrid_elements,
             "enemies": self.enemies,
             "grasses": self.grasses,
+            "bottom_bound": self.bottom_bound,
             "player": self.player
         }
 
