@@ -35,7 +35,6 @@ class Button:
         mouse_clicked = pygame.mouse.get_pressed()[0]
 
         self.click_history = [self.click_history[1]] + [mouse_clicked and self.is_hovered()]
-        # print(self.click_history)
 
     def clicked(self) -> bool:
         return self.click_history == [True, False]

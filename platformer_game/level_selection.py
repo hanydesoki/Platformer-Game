@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import pygame
 
@@ -56,6 +57,7 @@ class LevelSelection:
 
     def generate_level_set_menu(self) -> None:
         self.level_sets = os.listdir(self.folderpath)
+        self.level_set_surf_rects.clear()
         for i, level_set in enumerate(self.level_sets):
             surf = pygame.Surface((int(self.window.get_width() * 0.7), 60))
             surf.fill("gray")
@@ -103,20 +105,28 @@ class LevelSelection:
                 return
         
         # Chose level set
-        if left_clicked and self.selected_level_set is None:
+        if (left_clicked or right_clicked) and self.selected_level_set is None:
             for _, rect, level_set in self.level_set_surf_rects:
                 if rect.collidepoint(mouse_pos):
-                    self.set_level_set(level_set)
+                    if left_clicked:
+                        self.set_level_set(level_set)
+                        
+                    elif right_clicked and ctrl_pressed:
+                        self.delete_level_set(level_set)
 
         # Chose level
-        elif left_clicked and self.selected_level_set is not None:
+        elif (left_clicked or right_clicked) and self.selected_level_set is not None:
 
             for _, rect, level_name in self.level_surf_rects:
                 if rect.collidepoint(mouse_pos):
-                    if ctrl_pressed:
+                    if ctrl_pressed and left_clicked:
                         self.level_editor = LevelEditor(self, self.window, os.path.join(self.folderpath, self.selected_level_set, level_name))
-                    else:
+                    elif ctrl_pressed and right_clicked:
+                        self.delete_level(self.selected_level_set, level_name)
+                    elif left_clicked:
                         self.game = Game(self, self.window, os.path.join(self.folderpath, self.selected_level_set, level_name))
+                    
+
 
         
         if self.add_button.clicked():
@@ -131,6 +141,20 @@ class LevelSelection:
                 self.create_level_set(text)
             else:
                 self.create_level(self.selected_level_set, text)
+
+    def delete_level(self, level_set: str, level_name: str) -> None:
+        level_path = os.path.join(self.folderpath, level_set, level_name)
+        if os.path.exists(level_path):
+            os.remove(level_path)
+            self.set_level_set(self.selected_level_set)
+
+
+    def delete_level_set(self, level_set: str) -> None:
+        level_set_path = os.path.join(self.folderpath, level_set)
+
+        if os.path.exists(level_set_path):
+            shutil.rmtree(level_set_path)
+            self.generate_level_set_menu()
 
     def create_level_set(self, level_set: str) -> None:
         level_set_path = os.path.join(self.folderpath, level_set)
