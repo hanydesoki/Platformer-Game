@@ -2,12 +2,19 @@ import pygame
 
 from .camera import Camera
 from .animation import Animation
+from .colors import ColorGradient, ColorPoint
 
 
 class Entity(Camera):
 
     gravity = 0.4
     slow_down = 1
+
+    lifebar_gradient = ColorGradient(
+        ColorPoint((200, 0, 0), 0),
+        ColorPoint((200, 200, 0), 0.5),
+        ColorPoint((0, 200, 0), 1)
+    )
 
     def __init__(self, surface: pygame.Surface, pos: tuple[int, int], game, animation: Animation = None, max_hp: int = 1) -> None:
         super().__init__()
@@ -157,6 +164,30 @@ class Entity(Camera):
     def draw(self) -> None:
         if self.alive:
             self.surface.blit(self.surf, self.convert_pos(self.rect.topleft))
+
+            self.draw_lifebar()
+
+    def draw_lifebar(self) -> None:
+        hp_ratio = self.hp / self.max_hp
+
+        lifebar_lenght = 50
+
+        background_surf = pygame.Surface((lifebar_lenght, 10))
+        background_surf.fill((100, 100, 100))
+
+        ratio_surf_lenght = (lifebar_lenght - 4) * hp_ratio
+
+        ratio_surf = pygame.Surface((ratio_surf_lenght, 6))
+        bar_color = self.lifebar_gradient(hp_ratio)
+        # print(self.hp, self.max_hp, hp_ratio, bar_color)
+        ratio_surf.fill(bar_color)
+
+        background_surf.blit(ratio_surf, (2, 2))
+        
+        pos = (self.rect.centerx - lifebar_lenght // 2, self.rect.top - 20)
+
+        self.surface.blit(background_surf, self.convert_pos(pos))
+
 
     def update_surf(self) -> None:
         

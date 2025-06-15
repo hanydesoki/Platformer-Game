@@ -10,7 +10,7 @@ class Player(Entity):
 
     slow_down = 0.5
 
-    def __init__(self, surface, pos, game, animation = None, max_hp=2):
+    def __init__(self, surface, pos, game, animation = None, max_hp=3):
         super().__init__(surface, pos, game, animation, max_hp)
 
         self.status = ""

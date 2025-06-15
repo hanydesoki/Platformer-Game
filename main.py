@@ -1,7 +1,6 @@
 from platformer_game import Game, LevelEditor, LevelSelection
 
 
-
 def main() -> None:
     level_selection = LevelSelection(folderpath="Levels")
 
