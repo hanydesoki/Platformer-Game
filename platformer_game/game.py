@@ -155,6 +155,8 @@ class Game:
 
     def manage_player_controls(self, key_pressed, all_events) -> None:
 
+        mouse_pressed = pygame.mouse.get_pressed()
+
         if key_pressed[pygame.K_q]:
             self.player.move_sideway(-1)
         if key_pressed[pygame.K_d]:
@@ -164,7 +166,7 @@ class Game:
             self.player.jump()
 
         for event in all_events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and mouse_pressed[0]:
                 self.player.shoot()
 
     def manage_bullets(self) -> None:
