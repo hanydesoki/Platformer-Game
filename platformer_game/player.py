@@ -9,6 +9,7 @@ from .bullet import Bullet
 class Player(Entity):
 
     slow_down = 0.5
+    blocking_radius = 30
 
     def __init__(self, surface, pos, game, animation = None, max_hp=3):
         super().__init__(surface, pos, game, animation, max_hp)
@@ -19,6 +20,34 @@ class Player(Entity):
 
         self.x_comp: float = 1
         self.y_comp: float = 0
+
+        self.blocking_frame: int = 0
+        self.recovery_block: int = 0
+
+        self.blocking_surf = pygame.Surface((100, 100))
+        pygame.draw.circle(self.blocking_surf, (0, 100, 255), center=(50, 50), radius=self.blocking_radius)
+
+        self.blocking_surf.set_colorkey("black")
+
+        self.blocking_surf.set_alpha(100)
+
+    def block(self) -> None:
+        if self.status in {"Idle", "Walking", "Crouching"} and self.airtime == 0 and self.recovery_block == 0:
+            self.set_status("Crouching")
+            self.blocking_frame += 1
+
+    def stop_block(self) -> None:
+        self.set_status("Idle")
+        self.blocking_frame = 0
+        self.recovery_block = 30
+
+    @property
+    def parry_state(self) -> bool:
+        return 0 < self.blocking_frame < 4
+
+    def move_sideway(self, x_vel):
+        if self.blocking_frame == 0:
+            super().move_sideway(x_vel)        
 
     def update_camera_pos(self) -> None:
         Camera.offset_x += ((self.rect.centerx - self.game.tilemap.surface.get_width() // 4) - Camera.offset_x) * 0.1
@@ -42,13 +71,16 @@ class Player(Entity):
     def manage_status(self) -> None:
         if self.collisions["bottom"] and abs(self.x_vel) > 1:
             self.set_status("Walking")
-        elif self.collisions["bottom"] and abs(self.x_vel) < 1:
+        elif self.collisions["bottom"] and abs(self.x_vel) < 1 and self.status != "Crouching":
             self.set_status("Idle")
 
         if self.airtime >= 4:
             self.set_status("Jumping")
 
     def shoot(self) -> None:
+        
+        if self.status == "Crouching" or self.recovery_block > 0: return
+
         start_pos = self.rect.center
 
         new_bullet = Bullet(
@@ -80,6 +112,8 @@ class Player(Entity):
         self.flip = self.x_comp < 0
 
     def draw_aim(self) -> None:
+        if self.status == "Crouching": return 
+
         start_pos = self.rect.center
 
         pygame.draw.line(
@@ -97,15 +131,24 @@ class Player(Entity):
             width=3
         )
 
-    # def update_surf(self):
-    #     super().update_surf()
-    #     self.surf = pygame.transform.flip(self.surf, self.flip, False)
-    #     self.surf.set_colorkey("white")
+    def manage_recovery_block(self) -> None:
+        self.recovery_block = max(self.recovery_block - 1, 0)
+
+    def draw(self):
+        super().draw()
+
+        if self.blocking_frame:
+            self.surface.blit(
+                self.blocking_surf, 
+                self.convert_pos((self.rect.centerx - 50, self.rect.centery - 50))
+            )
 
     def update(self):
         if self.alive:
+            # print(self.status)
             self.manage_status()
             self.manage_aim()
+            self.manage_recovery_block()
             self.draw_aim()
             super().update()
             

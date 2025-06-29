@@ -28,3 +28,7 @@ def load_folder(folderpath: str, colorkey=(0, 0, 0)) -> list[pygame.Surface]:
         images.append(surf)
 
     return images
+
+
+def squared_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
+    return pow(p1[0] - p2[0], 2) + pow(p1[1] - p2[1], 2)

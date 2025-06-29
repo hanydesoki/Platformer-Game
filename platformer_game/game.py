@@ -6,7 +6,7 @@ import pygame
 
 from .camera import Camera
 from .tilemap import TileMap
-from .utils import load_tile_assets, load_folder
+from .utils import load_tile_assets, load_folder, squared_distance
 from .player import Player
 from .animation import Animation
 from .bullet import Bullet
@@ -43,6 +43,7 @@ class Game:
             "Player/Idle": Animation(self.assets["characters"]["Player"]["Idle"], 30, True),
             "Player/Walking": Animation(self.assets["characters"]["Player"]["Walking"], 5, True),
             "Player/Jumping": Animation(self.assets["characters"]["Player"]["Jumping"], 20, False),
+            "Player/Crouching": Animation(self.assets["characters"]["Player"]["Crouching"], 60, True),
             "Enemy/Idle": Animation(self.assets["characters"]["Enemy"]["Idle"], 30, True),
             "Enemy/Walking": Animation(self.assets["characters"]["Enemy"]["Walking"], 5, True),
             "Enemy/Jumping": Animation(self.assets["characters"]["Enemy"]["Jumping"], 20, False),
@@ -165,6 +166,12 @@ class Game:
         if key_pressed[pygame.K_SPACE]:
             self.player.jump()
 
+        if key_pressed[pygame.K_s]:
+            self.player.block()
+        elif self.player.blocking_frame > 0:
+            print("stop_block")
+            self.player.stop_block()
+            
         for event in all_events:
             if event.type == pygame.MOUSEBUTTONDOWN and mouse_pressed[0]:
                 self.player.shoot()
@@ -211,6 +218,20 @@ class Game:
                         self.bullets.remove(bullet)
                         break
             else:
+
+                # Player block or parry
+                if self.player.status == "Crouching":
+                    
+                    # Bullet hit shield
+                    if squared_distance(self.player.rect.center, (bullet.x, bullet.y)) < pow(self.player.blocking_radius, 2):
+                        if self.player.parry_state:
+                            bullet.owner = self.player
+                            bullet.x_vel *= -2
+                            bullet.y_vel *= -2
+                        else:
+                            self.bullets.remove(bullet)
+                            continue
+
                 # Check bullet hit player
                 if self.player.rect.collidepoint((bullet.x, bullet.y)):
                     self.bullets.remove(bullet)
@@ -224,17 +245,7 @@ class Game:
                             dissipation=0.4,
                             speed=(0.5, 3)
                         )
-                    # if not self.player.alive:
-                    #     self.spawn_impacts(
-                    #         15, 
-                    #         self.player.rect.center, 
-                    #         (10, 20), 
-                    #         (3, 5), 
-                    #         (150, 0, 0),
-                    #         dissipation=0.05,
-                    #         speed=(0.5, 3)
-                    #     )
-                    #     Camera.shake_screen(10)
+
                     
 
             bullet.draw()
