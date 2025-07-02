@@ -9,11 +9,12 @@ class Impact(Camera):
 
     def __init__(
             self, 
-            surface: pygame.Surface, 
+            surface: pygame.Surface,
             pos: tuple[float, float], 
             size: float, 
             base_size: float, 
             angle: float,
+            game,
             speed: float = 0,
             dissipation: float = 0.2, 
             color="white"
@@ -36,6 +37,8 @@ class Impact(Camera):
 
         self.base_x_comp = math.cos(self.angle + math.pi / 2)
         self.base_y_comp = math.sin(self.angle + math.pi / 2)
+
+        self.game = game
 
     @property
     def active(self) -> None:
@@ -60,8 +63,8 @@ class Impact(Camera):
 
     def update(self) -> None:
         if self.active:
-            self.x += self.x_comp * self.speed
-            self.y += self.y_comp * self.speed
+            self.x += self.x_comp * self.speed * self.game.game_speed
+            self.y += self.y_comp * self.speed * self.game.game_speed
             self.base_size = max(self.base_size - self.dissipation, 0)
             self.size += self.dissipation
 

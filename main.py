@@ -1,4 +1,4 @@
-from platformer_game import Game, LevelEditor, LevelSelection
+from platformer_game import LevelSelection
 
 
 def main() -> None:

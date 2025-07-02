@@ -43,8 +43,8 @@ class Bullet(Camera):
 
     def update(self) -> None:
         if self.active:
-            self.x += self.x_vel
-            self.y += self.y_vel
+            self.x += self.x_vel * self.game.game_speed
+            self.y += self.y_vel * self.game.game_speed
 
             self.frame += 1
 

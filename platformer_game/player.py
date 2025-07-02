@@ -9,7 +9,7 @@ from .bullet import Bullet
 class Player(Entity):
 
     slow_down = 0.5
-    blocking_radius = 30
+    blocking_radius = 24
 
     def __init__(self, surface, pos, game, animation = None, max_hp=3):
         super().__init__(surface, pos, game, animation, max_hp)
@@ -39,7 +39,7 @@ class Player(Entity):
     def stop_block(self) -> None:
         self.set_status("Idle")
         self.blocking_frame = 0
-        self.recovery_block = 30
+        self.recovery_block = 15
 
     @property
     def parry_state(self) -> bool:

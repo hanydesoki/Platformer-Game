@@ -19,6 +19,13 @@ class Game:
 
     collision_tiles = {"Dirt", "Stone"}
 
+    fps: int = 60
+    max_fps: int = 60
+
+    game_speed: float = 1
+
+    game_shade: float = 1
+
     def __init__(self, level_selection, window: pygame.Surface, level_path: str):
 
         self.level_selection = level_selection
@@ -169,7 +176,6 @@ class Game:
         if key_pressed[pygame.K_s]:
             self.player.block()
         elif self.player.blocking_frame > 0:
-            print("stop_block")
             self.player.stop_block()
             
         for event in all_events:
@@ -223,19 +229,42 @@ class Game:
                 if self.player.status == "Crouching":
                     
                     # Bullet hit shield
-                    if squared_distance(self.player.rect.center, (bullet.x, bullet.y)) < pow(self.player.blocking_radius, 2):
+                    bullet_squared_dist = squared_distance(self.player.rect.center, (bullet.x, bullet.y))
+                    if bullet_squared_dist < pow(self.player.blocking_radius, 2):
                         if self.player.parry_state:
                             bullet.owner = self.player
                             bullet.x_vel *= -2
                             bullet.y_vel *= -2
+                            self.set_game_speed(0.05)
+                            self.set_game_shade(0.05)
+                            Camera.shake_screen(15)
+                            self.spawn_impacts(
+                                10, 
+                                (bullet.x, bullet.y), 
+                                (10, 20), 
+                                (2, 4), 
+                                (100, 100, 255),
+                                dissipation=0.05,
+                                speed=(2, 3)
+                            )
                         else:
                             self.bullets.remove(bullet)
+                            self.spawn_impacts(
+                                5, 
+                                (bullet.x, bullet.y), 
+                                (5, 10), 
+                                (1, 2), 
+                                (100, 100, 255),
+                                dissipation=0.1,
+                                speed=(2, 3)
+                            )
                             continue
 
                 # Check bullet hit player
                 if self.player.rect.collidepoint((bullet.x, bullet.y)):
                     self.bullets.remove(bullet)
                     self.player.get_hit(1)
+                    Camera.shake_screen(10)
                     self.spawn_impacts(
                             5, 
                             (bullet.x, bullet.y), 
@@ -269,6 +298,7 @@ class Game:
                 random.randint(*size_range),
                 base_size_range[0] + random.random() * (base_size_range[1] - base_size_range[0]),
                 random.random() * 2 * math.pi,
+                self,
                 color=color,
                 speed=impact_speed,
                 dissipation=dissipation
@@ -281,16 +311,6 @@ class Game:
             enemy.draw()
 
             if not enemy.alive:
-                # self.spawn_impacts(
-                #     15, 
-                #     enemy.rect.center, 
-                #     (10, 20), 
-                #     (3, 5), 
-                #     (150, 0, 0),
-                #     dissipation=0.05,
-                #     speed=(0.5, 3)
-                # )
-                # Camera.shake_screen(10)
                 self.enemies.remove(enemy)
 
     def manage_impacts(self) -> None:
@@ -355,6 +375,24 @@ class Game:
 
         self.window.blit(surf, (0, 0))
 
+    @classmethod
+    def set_game_speed(cls, game_speed: float = 1) -> None:
+        cls.game_speed = game_speed
+
+    @classmethod
+    def set_game_shade(cls, game_shade: float = 1) -> None:
+        cls.game_shade = game_shade
+
+    @classmethod
+    def manage_game_speed(cls) -> None:
+        cls.game_speed = min(cls.game_speed + 0.01, 1)
+
+
+    @classmethod
+    def manage_game_shade(cls) -> None:
+        cls.game_shade = min(cls.game_shade + 0.01, 1)
+    
+
     def run(self) -> None:
         
         while self.game_loop:
@@ -375,6 +413,11 @@ class Game:
             self.display.fill((100, 200, 255))
             self.update_clouds()
             
+            shade_surf = pygame.Surface(self.window.get_size())
+            shade_surf.set_alpha(int(255 * (1 - self.game_shade)))
+
+            self.display.blit(shade_surf, (0, 0))
+
             self.player.update()
             self.player.draw()
 
@@ -393,8 +436,10 @@ class Game:
                 (0, 0)
             )
             Camera.update_shake()
+            self.manage_game_speed()
+            self.manage_game_shade()
             self.manage_and_draw_level_transition()
             pygame.display.update()
 
-            self.clock.tick(60)
+            self.clock.tick(self.fps)
 

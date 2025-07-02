@@ -82,14 +82,6 @@ class Entity(Camera):
 
         surrounding_tiles = self.get_surrounding_tiles()
 
-        # for tile in surrounding_tiles:
-        #     pygame.draw.rect(
-        #         self.surface,
-        #         "yellow",
-        #         (*self.convert_pos((tile["indexes"][0] * self.game.tilemap.tilesize, tile["indexes"][1] * self.game.tilemap.tilesize)) ,self.game.tilemap.tilesize, self.game.tilemap.tilesize),
-        #         width=1
-        #     )
-
         self.airtime += 1
 
         if self.x_vel < 0:
@@ -97,10 +89,10 @@ class Entity(Camera):
         else:
             self.x_vel = max(self.x_vel - self.slow_down, 0)
 
-        self.y_vel += self.gravity
+        self.y_vel += self.gravity * self.game.game_speed
 
                 # Vertical movement
-        self.y += self.y_vel
+        self.y += self.y_vel * self.game.game_speed
         self.rect.midbottom = (self.x, self.y)
         collided_tile, collided_tile_rect = self.collide_tile(surrounding_tiles)
 
@@ -117,7 +109,7 @@ class Entity(Camera):
             self.x, self.y = self.rect.midbottom
 
         # Horizontal movement
-        self.x += self.x_vel
+        self.x += self.x_vel * self.game.game_speed
         self.rect.midbottom = (self.x, self.y)
         collided_tile, collided_tile_rect = self.collide_tile(surrounding_tiles)
 
