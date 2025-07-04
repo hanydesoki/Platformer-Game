@@ -3,6 +3,7 @@ import pygame
 from .camera import Camera
 from .animation import Animation
 from .colors import ColorGradient, ColorPoint
+from .weapon import Weapon
 
 
 class Entity(Camera):
@@ -53,6 +54,16 @@ class Entity(Camera):
         self.max_hp = max_hp
         self.hp = self.max_hp
 
+        self.weapon: Weapon = None
+
+    def set_weapon(self, weapon: Weapon) -> None:
+        self.weapon = weapon
+        weapon.set_owner(self)
+
+    def drop_weapon(self) -> None:
+        self.weapon.set_owner(None)
+        self.weapon = None
+        
     def get_hit(self, damage: int) -> None:
         self.hp = max(self.hp - damage, 0)
         if not self.alive:
@@ -209,5 +220,7 @@ class Entity(Camera):
         if self.alive:
             self.update_surf()
             self.update_position()  
-            self.check_oob()      
+            self.check_oob()
+            if self.weapon is not None:
+                self.weapon.update()   
 

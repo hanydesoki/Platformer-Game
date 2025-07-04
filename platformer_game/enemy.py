@@ -5,6 +5,7 @@ import pygame
 
 from .entity import Entity
 from .bullet import Bullet
+from .weapon import Pistol
 
 class Enemy(Entity):
 
@@ -22,10 +23,12 @@ class Enemy(Entity):
 
         self.player_spotted: bool = False
 
-        self.shoot_cooldown: int = 0
+        # self.shoot_cooldown: int = 0
 
         self.movement_status: str = "stop"
         self.movement_frame: int = 0
+
+        self.set_weapon(Pistol(self.game, self))
     
 
     def set_status(self, status: str) -> None:
@@ -48,17 +51,22 @@ class Enemy(Entity):
             self.set_status("Jumping")
 
     def shoot(self) -> None:
-        start_pos = self.rect.center
 
-        new_bullet = Bullet(
-            (start_pos[0] + self.x_comp * 10, start_pos[1] + self.y_comp * 10),
-            self.x_comp * 5,
-            self.y_comp * 5,
-            self.game,
-            self
-        )
+        if self.weapon is None: return
 
-        self.game.bullets.append(new_bullet)
+        if self.weapon.shoot():
+
+            start_pos = self.rect.center
+
+            new_bullet = Bullet(
+                (start_pos[0] + self.x_comp * 10, start_pos[1] + self.y_comp * 10),
+                self.x_comp * 5,
+                self.y_comp * 5,
+                self.game,
+                self
+            )
+
+            self.game.bullets.append(new_bullet)
 
     def manage_aim(self) -> None:
         character_center = self.rect.center
@@ -120,9 +128,9 @@ class Enemy(Entity):
         if self.movement_frame == 0:
             self.movement_status = "stop"
 
-        if self.player_spotted and self.shoot_cooldown <= 0:
+        if self.player_spotted:
             self.shoot()
-            self.shoot_cooldown = 120
+            # self.shoot_cooldown = 120
             self.movement_status = "stop"
             self.movement_frame = 0
             
@@ -182,7 +190,7 @@ class Enemy(Entity):
 
     def update(self):
         if self.alive:
-            self.shoot_cooldown = max(self.shoot_cooldown - 1, 0)
+            # self.shoot_cooldown = max(self.shoot_cooldown - 1, 0)
             self.manage_status()
             self.manage_aim()
             self.manage_ai()

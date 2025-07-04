@@ -150,6 +150,7 @@ class Game:
         self.assets["tiles"] = load_tile_assets(os.path.join(asset_path, "Tile_assets"))
 
         self.assets["characters"] = {}
+        self.assets["weapons"] = {}
 
         for character in os.listdir(os.path.join(asset_path, "Characters")):
             self.assets["characters"][character] = {}
@@ -159,7 +160,10 @@ class Game:
                     colorkey=(255, 255, 255)
                 )
 
-        # print(self.assets)
+        for weapon in os.listdir(os.path.join(asset_path, "Weapons")):
+            self.assets["weapons"][weapon.split(".")[0]] = pygame.image.load(
+                os.path.join(asset_path, "Weapons", weapon)
+            ).convert()
 
     def manage_player_controls(self, key_pressed, all_events) -> None:
 
@@ -385,12 +389,12 @@ class Game:
 
     @classmethod
     def manage_game_speed(cls) -> None:
-        cls.game_speed = min(cls.game_speed + 0.01, 1)
+        cls.game_speed = min(cls.game_speed + 0.02, 1)
 
 
     @classmethod
     def manage_game_shade(cls) -> None:
-        cls.game_shade = min(cls.game_shade + 0.01, 1)
+        cls.game_shade = min(cls.game_shade + 0.02, 1)
     
 
     def run(self) -> None:

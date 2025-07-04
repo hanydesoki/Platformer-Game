@@ -5,6 +5,8 @@ import pygame
 from .entity import Entity
 from .camera import Camera
 from .bullet import Bullet
+from .weapon import Pistol
+
 
 class Player(Entity):
 
@@ -30,6 +32,8 @@ class Player(Entity):
         self.blocking_surf.set_colorkey("black")
 
         self.blocking_surf.set_alpha(100)
+
+        self.set_weapon(Pistol(self.game, self))
 
     def block(self) -> None:
         if self.status in {"Idle", "Walking", "Crouching"} and self.airtime == 0 and self.recovery_block == 0:
@@ -78,20 +82,24 @@ class Player(Entity):
             self.set_status("Jumping")
 
     def shoot(self) -> None:
+
+        if self.weapon is None: return
         
         if self.status == "Crouching" or self.recovery_block > 0: return
 
-        start_pos = self.rect.center
+        if self.weapon.shoot():
 
-        new_bullet = Bullet(
-            (start_pos[0] + self.x_comp * 10, start_pos[1] + self.y_comp * 10),
-            self.x_comp * 5,
-            self.y_comp * 5,
-            self.game,
-            self
-        )
+            start_pos = self.rect.center
 
-        self.game.bullets.append(new_bullet)
+            new_bullet = Bullet(
+                (start_pos[0] + self.x_comp * 10, start_pos[1] + self.y_comp * 10),
+                self.x_comp * 5,
+                self.y_comp * 5,
+                self.game,
+                self
+            )
+
+            self.game.bullets.append(new_bullet)
 
     def manage_aim(self) -> None:
         screen_center = (self.game.window.get_width() // 2, self.game.window.get_height() // 2)
