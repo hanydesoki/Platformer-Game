@@ -14,7 +14,8 @@ from .enemy import Enemy
 from .impact import Impact
 from .grass_blade import GrassBlade
 from .cloud import Cloud
-from .weapon import AR
+from .weapon import Weapon, AR, Pistol
+from .pick_up import PickUp
 
 class Game:
 
@@ -26,6 +27,13 @@ class Game:
     game_speed: float = 1
 
     game_shade: float = 1
+
+    gravity: float = 0.4
+
+    weapons: dict[str, type[Weapon]] = {
+        "pistol": Pistol,
+        "ar": AR
+    }
 
     def __init__(self, level_selection, window: pygame.Surface, level_path: str):
 
@@ -89,6 +97,26 @@ class Game:
 
         # print(self.grasses)
 
+        self.weapon_pickups: list[PickUp] = []
+
+        for metadata in self.tilemap.tile_metadata.values():
+            if metadata["text"].startswith("weapon___"):
+                weapon_name = metadata["text"].split("___")[-1]
+                weapon = self.weapons[weapon_name](self, None)
+                weapon_surf = pygame.transform.rotozoom(self.assets["weapons"][weapon_name], 0, 0.4)
+
+                weapon_surf.set_colorkey("black")
+
+                pickup = PickUp(
+                    self,
+                    (metadata["indexes"][0] * self.tilemap.tilesize, metadata["indexes"][1] * self.tilemap.tilesize),
+                    weapon_surf
+                )
+
+                pickup.content = weapon
+
+                self.weapon_pickups.append(pickup)
+
         self.impacts: list[Impact] = []
 
         self.in_level_transition: bool = False
@@ -110,6 +138,8 @@ class Game:
             self.clouds.append(cloud)
 
         self.clouds.sort(key=lambda c: c.depth)
+
+        
 
     def load_level(self, level_path: str) -> None:
         self.tilemap.load_tiles(level_path)
@@ -143,6 +173,26 @@ class Game:
                 self.grasses[tile_key].append(grass_blade)
 
         # print(self.grasses)
+
+        self.weapon_pickups: list[PickUp] = []
+
+        for metadata in self.tilemap.tile_metadata.values():
+            if metadata["text"].startswith("weapon___"):
+                weapon_name = metadata["text"].split("___")[-1]
+                weapon = self.weapons[weapon_name](self, None)
+                weapon_surf = pygame.transform.rotozoom(self.assets["weapons"][weapon_name], 0, 0.4)
+
+                weapon_surf.set_colorkey("black")
+
+                pickup = PickUp(
+                    self,
+                    (metadata["indexes"][0] * self.tilemap.tilesize, metadata["indexes"][1] * self.tilemap.tilesize),
+                    weapon_surf
+                )
+
+                pickup.content = weapon
+
+                self.weapon_pickups.append(pickup)
 
         self.impacts: list[Impact] = []
 
@@ -338,7 +388,26 @@ class Game:
 
             for grass_blade in  self.grasses.get(tile_key, []):
                 grass_blade.update_angle(self.player.rect.midbottom)
+
+    def manage_pickup(self) -> None:
+        for pickup in self.weapon_pickups[:]:
+            pickup.update()
+            if self.player.rect.colliderect(pickup.rect) and self.player.weapon_pickup_frame == 0:
+                self.weapon_pickups.remove(pickup)
+                if self.player.weapon is not None:
+                    # print("dropped", self.player.weapon.weapon_name)
+                    self.player.drop_weapon()
                     
+
+                self.player.set_weapon(pickup.content)
+                # print("picked", self.player.weapon.weapon_name, pickup.content)
+            # print(pickup.active, pickup.y, self.tilemap.bottom_bound)
+            if not pickup.active:
+                self.weapon_pickups.remove(pickup)
+        # print([(p.x, p.y) for p in self.weapon_pickups])
+    def draw_pickups(self) -> None:
+        for pickup in self.weapon_pickups:
+            pickup.draw()                
 
     def draw_grasses(self) -> None:
         for grass_tile in self.grasses.values():
@@ -435,7 +504,9 @@ class Game:
             self.manage_impacts()
 
             self.manage_grasses()
+            self.manage_pickup()
             self.draw_grasses()
+            self.draw_pickups()
 
             self.tilemap.draw_tiles()
             self.manage_game_over()

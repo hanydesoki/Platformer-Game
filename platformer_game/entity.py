@@ -1,14 +1,17 @@
+import random
+
 import pygame
 
 from .camera import Camera
 from .animation import Animation
 from .colors import ColorGradient, ColorPoint
 from .weapon import Weapon
+from .pick_up import PickUp
 
 
 class Entity(Camera):
 
-    gravity = 0.4
+    # gravity = 0.4
     slow_down = 1
 
     lifebar_gradient = ColorGradient(
@@ -56,12 +59,37 @@ class Entity(Camera):
 
         self.weapon: Weapon = None
 
+        self.weapon_pickup_frame: int = 0
+
     def set_weapon(self, weapon: Weapon) -> None:
         self.weapon = weapon
         weapon.set_owner(self)
 
     def drop_weapon(self) -> None:
-        self.weapon.set_owner(None)
+        
+        if self.weapon is not None:
+            self.weapon.set_owner(None)
+            surf = pygame.transform.rotozoom(
+                self.game.assets["weapons"][self.weapon.weapon_name],
+                0,
+                0.4
+            )
+            surf.set_colorkey("black")
+            pickup = PickUp(
+                self.game,
+                self.rect.center,
+                surf
+            )
+
+            pickup.x_vel = -self.x_vel / abs(self.x_vel) * random.random() * 4 if self.x_vel != 0 else -3
+            pickup.y_vel = -4 * random.random()
+
+            pickup.content = self.weapon
+
+            self.game.weapon_pickups.append(pickup)
+
+            self.weapon_pickup_frame = 45
+
         self.weapon = None
         
     def get_hit(self, damage: int) -> None:
@@ -100,7 +128,7 @@ class Entity(Camera):
         else:
             self.x_vel = max(self.x_vel - self.slow_down, 0)
 
-        self.y_vel += self.gravity * self.game.game_speed
+        self.y_vel += self.game.gravity * self.game.game_speed
 
                 # Vertical movement
         self.y += self.y_vel * self.game.game_speed
@@ -223,6 +251,7 @@ class Entity(Camera):
 
     def update(self) -> None:
         if self.alive:
+            self.weapon_pickup_frame = max(self.weapon_pickup_frame - 1, 0)
             self.update_surf()
             self.update_position()  
             self.check_oob()

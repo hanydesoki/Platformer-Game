@@ -33,7 +33,7 @@ class Player(Entity):
 
         self.blocking_surf.set_alpha(100)
 
-        self.set_weapon(AR(self.game, self))
+        self.set_weapon(Pistol(self.game, self))
 
     def block(self) -> None:
         if self.status in {"Idle", "Walking", "Crouching"} and self.airtime == 0 and self.recovery_block == 0:
