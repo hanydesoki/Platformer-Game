@@ -168,7 +168,12 @@ class Entity(Camera):
         if self.alive:
             self.surface.blit(self.surf, self.convert_pos(self.rect.topleft))
 
+            self.draw_weapon()
+
             self.draw_lifebar()
+
+    def draw_weapon(self) -> None:
+        pass
 
     def draw_lifebar(self) -> None:
         hp_ratio = self.hp / self.max_hp
