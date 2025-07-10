@@ -43,4 +43,10 @@ class Pistol(Weapon):
     damage: int = 1
 
     weapon_name: str = "pistol"
+
+class AR(Weapon):
+    fire_rate: int = 10
+    damage: int = 1
+
+    weapon_name: str = "ar"
         

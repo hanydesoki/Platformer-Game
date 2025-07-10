@@ -14,6 +14,7 @@ from .enemy import Enemy
 from .impact import Impact
 from .grass_blade import GrassBlade
 from .cloud import Cloud
+from .weapon import AR
 
 class Game:
 
@@ -114,6 +115,7 @@ class Game:
         self.tilemap.load_tiles(level_path)
 
         self.player = Player(self.display, self.tilemap.player["coord"], self, self.animations["Player/Idle"].copy())
+        
         Camera.offset_x = self.player.rect.centerx - self.tilemap.surface.get_width() // 4
         Camera.offset_y = self.player.rect.centery - self.tilemap.surface.get_height() // 4
         self.bullets: list[Bullet] = []
@@ -182,9 +184,12 @@ class Game:
         elif self.player.blocking_frame > 0:
             self.player.stop_block()
             
-        for event in all_events:
-            if event.type == pygame.MOUSEBUTTONDOWN and mouse_pressed[0]:
-                self.player.shoot()
+        # for event in all_events:
+        #     if event.type == pygame.MOUSEBUTTONDOWN and mouse_pressed[0]:
+        #         self.player.shoot()
+
+        if mouse_pressed[0]:
+            self.player.shoot()
 
     def manage_bullets(self) -> None:
         for bullet in self.bullets[:]:
