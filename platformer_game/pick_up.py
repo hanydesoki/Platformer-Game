@@ -23,6 +23,8 @@ class PickUp(Camera):
 
         self.content = None
 
+        self.pickup_frame: int = 0
+
     def get_surrounding_tiles(self) -> list[dict]:
         current_index = self.get_current_index()
         tiles: list[dict] = []
@@ -115,6 +117,7 @@ class PickUp(Camera):
         return self.y < self.game.tilemap.bottom_bound * self.game.tilemap.tilesize
 
     def update(self) -> None:
+        self.pickup_frame = max(self.pickup_frame - 1, 0)
         self.update_pos()
         self.draw()
             

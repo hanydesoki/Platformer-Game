@@ -233,11 +233,12 @@ class Game:
             self.player.block()
         elif self.player.blocking_frame > 0:
             self.player.stop_block()
-            
-        # for event in all_events:
-        #     if event.type == pygame.MOUSEBUTTONDOWN and mouse_pressed[0]:
-        #         self.player.shoot()
 
+        for event in all_events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_g:
+                    self.player.drop_weapon()
+            
         if mouse_pressed[0]:
             self.player.shoot()
 
@@ -392,7 +393,8 @@ class Game:
     def manage_pickup(self) -> None:
         for pickup in self.weapon_pickups[:]:
             pickup.update()
-            if self.player.rect.colliderect(pickup.rect) and self.player.weapon_pickup_frame == 0:
+            # if self.player.rect.colliderect(pickup.rect) and self.player.weapon_pickup_frame == 0:
+            if self.player.rect.colliderect(pickup.rect) and self.player.weapon is None and pickup.pickup_frame == 0:
                 self.weapon_pickups.remove(pickup)
                 if self.player.weapon is not None:
                     # print("dropped", self.player.weapon.weapon_name)

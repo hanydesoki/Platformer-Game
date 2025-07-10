@@ -59,7 +59,7 @@ class Entity(Camera):
 
         self.weapon: Weapon = None
 
-        self.weapon_pickup_frame: int = 0
+        # self.weapon_pickup_frame: int = 0
 
     def set_weapon(self, weapon: Weapon) -> None:
         self.weapon = weapon
@@ -86,9 +86,11 @@ class Entity(Camera):
 
             pickup.content = self.weapon
 
+            pickup.pickup_frame = 45
+
             self.game.weapon_pickups.append(pickup)
 
-            self.weapon_pickup_frame = 45
+            # self.weapon_pickup_frame = 45
 
         self.weapon = None
         
@@ -251,7 +253,7 @@ class Entity(Camera):
 
     def update(self) -> None:
         if self.alive:
-            self.weapon_pickup_frame = max(self.weapon_pickup_frame - 1, 0)
+            # self.weapon_pickup_frame = max(self.weapon_pickup_frame - 1, 0)
             self.update_surf()
             self.update_position()  
             self.check_oob()
