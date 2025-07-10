@@ -108,6 +108,9 @@ class Entity(Camera):
             )
             Camera.shake_screen(10)
 
+    def heal(self, amount: int = 1) -> None:
+        self.hp = min(self.hp + amount, self.max_hp)
+
     @property
     def alive(self) -> bool:
         return self.hp > 0

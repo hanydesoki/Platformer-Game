@@ -98,6 +98,7 @@ class Game:
         # print(self.grasses)
 
         self.weapon_pickups: list[PickUp] = []
+        self.pickups: list[PickUp] = []
 
         for metadata in self.tilemap.tile_metadata.values():
             if metadata["text"].startswith("weapon___"):
@@ -116,6 +117,26 @@ class Game:
                 pickup.content = weapon
 
                 self.weapon_pickups.append(pickup)
+
+            if metadata["text"].startswith("pickup___"):
+                pickup_name = metadata["text"].split("___")[-1]
+
+                if pickup_name == "health":
+                    pickup_surf = pygame.transform.rotozoom(self.assets["pickups"][pickup_name], 0, 0.8)
+                    pickup_surf.set_colorkey("black")
+                    pickup = PickUp(
+                        self,
+                        (metadata["indexes"][0] * self.tilemap.tilesize, metadata["indexes"][1] * self.tilemap.tilesize),
+                        pickup_surf
+                    )
+
+                    pickup.content = {
+                        "type": "health",
+                        "amount": 1
+                    }
+
+                    self.pickups.append(pickup)
+
 
         self.impacts: list[Impact] = []
 
@@ -175,6 +196,7 @@ class Game:
         # print(self.grasses)
 
         self.weapon_pickups: list[PickUp] = []
+        self.pickups: list[PickUp] = []
 
         for metadata in self.tilemap.tile_metadata.values():
             if metadata["text"].startswith("weapon___"):
@@ -194,6 +216,24 @@ class Game:
 
                 self.weapon_pickups.append(pickup)
 
+            if metadata["text"].startswith("pickup___"):
+                pickup_name = metadata["text"].split("___")[-1]
+
+                if pickup_name == "health":
+                    pickup_surf = pygame.transform.rotozoom(self.assets["pickups"][pickup_name], 0, 0.8)
+                    pickup_surf.set_colorkey("black")
+                    pickup = PickUp(
+                        self,
+                        (metadata["indexes"][0] * self.tilemap.tilesize, metadata["indexes"][1] * self.tilemap.tilesize),
+                        pickup_surf
+                    )
+                    pickup.content = {
+                        "type": "health",
+                        "amount": 1
+                    }
+
+                    self.pickups.append(pickup)
+
         self.impacts: list[Impact] = []
 
     def load_assets(self, asset_path: str) -> None:
@@ -203,6 +243,7 @@ class Game:
 
         self.assets["characters"] = {}
         self.assets["weapons"] = {}
+        self.assets["pickups"] = {}
 
         for character in os.listdir(os.path.join(asset_path, "Characters")):
             self.assets["characters"][character] = {}
@@ -216,6 +257,12 @@ class Game:
             self.assets["weapons"][weapon.split(".")[0]] = pygame.image.load(
                 os.path.join(asset_path, "Weapons", weapon)
             ).convert()
+
+        for pickup in os.listdir(os.path.join(asset_path, "Pickups")):
+            self.assets["pickups"][pickup.split(".")[0]] = pygame.image.load(
+                os.path.join(asset_path, "Pickups", pickup)
+            ).convert()
+
 
     def manage_player_controls(self, key_pressed, all_events) -> None:
 
@@ -393,23 +440,31 @@ class Game:
     def manage_pickup(self) -> None:
         for pickup in self.weapon_pickups[:]:
             pickup.update()
-            # if self.player.rect.colliderect(pickup.rect) and self.player.weapon_pickup_frame == 0:
+            
             if self.player.rect.colliderect(pickup.rect) and self.player.weapon is None and pickup.pickup_frame == 0:
                 self.weapon_pickups.remove(pickup)
                 if self.player.weapon is not None:
-                    # print("dropped", self.player.weapon.weapon_name)
+                    
                     self.player.drop_weapon()
                     
 
                 self.player.set_weapon(pickup.content)
-                # print("picked", self.player.weapon.weapon_name, pickup.content)
-            # print(pickup.active, pickup.y, self.tilemap.bottom_bound)
+               
             if not pickup.active:
                 self.weapon_pickups.remove(pickup)
-        # print([(p.x, p.y) for p in self.weapon_pickups])
+                
+        for pickup in self.pickups[:]:
+            pickup.update()
+
+            if self.player.rect.colliderect(pickup.rect):
+                if pickup.content["type"] == "health":
+                    self.player.heal(pickup.content.get("amont", 1))
+                self.pickups.remove(pickup)
+        
+        
     def draw_pickups(self) -> None:
-        for pickup in self.weapon_pickups:
-            pickup.draw()                
+        for pickup in self.weapon_pickups + self.pickups:
+            pickup.draw()
 
     def draw_grasses(self) -> None:
         for grass_tile in self.grasses.values():
