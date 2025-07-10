@@ -35,7 +35,7 @@ class PickUp(Camera):
         return tiles
 
     def get_current_index(self) -> tuple[int, int]:
-        return int(self.x // self.game.tilemap.tilesize), int(self.y // self.game.tilemap.tilesize)
+        return int(self.x // self.game.tilemap.tilesize), int((self.y) // self.game.tilemap.tilesize)
 
     def check_collision(self) -> dict | None:
         current_inndexes: tuple[int, int] = self.get_current_index()
@@ -47,32 +47,6 @@ class PickUp(Camera):
         return None
 
     def update_pos(self) -> None:
-
-        if self.x_vel:
-            self.x_vel += 0.1 if self.x_vel < 0 else -0.1
-
-        self.x += self.x_vel
-
-        collided_tile: dict | None = self.check_collision()
-
-        if collided_tile is not None and self.x_vel:
-            tile_rect = pygame.Rect(
-                collided_tile["indexes"][0] * self.game.tilemap.tilesize,
-                collided_tile["indexes"][1] * self.game.tilemap.tilesize,
-                self.game.tilemap.tilesize,
-                self.game.tilemap.tilesize,
-            )
-
-            # if self.x_vel > 0:
-            #     self.x = tile_rect.left - 1
-            # elif self.y_vel < 0:
-            #     self.x = tile_rect.right + 1
-                
-            self.x_vel *= -0.5
-
-            if abs(self.x_vel) < 0.4:
-                self.x_vel = 0
-
 
         self.y_vel += self.game.gravity
 
@@ -90,9 +64,9 @@ class PickUp(Camera):
 
 
             if self.y_vel > 0:
-                self.y = tile_rect.top
+                self.y = tile_rect.top - 0.01
             else:
-                self.y = tile_rect.bottom 
+                self.y = tile_rect.bottom
 
             self.y_vel *= -0.8
 
@@ -100,7 +74,35 @@ class PickUp(Camera):
                 self.y_vel = 0
 
         self.rect.midbottom = (self.x, self.y)
-        # print(self.x, self.y)
+        # print(self.x, self.y, self.y_vel)
+
+        
+        if self.x_vel:
+            self.x_vel += 0.1 if self.x_vel < 0 else -0.1
+
+        if abs(self.x_vel) < 0.4:
+            self.x_vel = 0
+
+        self.x += self.x_vel
+
+        collided_tile: dict | None = self.check_collision()
+
+        if collided_tile is not None and self.x_vel:
+            tile_rect = pygame.Rect(
+                collided_tile["indexes"][0] * self.game.tilemap.tilesize,
+                collided_tile["indexes"][1] * self.game.tilemap.tilesize,
+                self.game.tilemap.tilesize,
+                self.game.tilemap.tilesize,
+            )
+
+            if self.x_vel > 0:
+                self.x = tile_rect.left - 1
+            elif self.y_vel < 0:
+                self.x = tile_rect.right + 1
+                
+            self.x_vel *= -1
+
+            
 
     def draw(self) -> None:
         self.game.display.blit(
