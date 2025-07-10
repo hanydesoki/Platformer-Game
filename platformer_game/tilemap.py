@@ -20,6 +20,7 @@ class TileMap(Camera):
         self.enemies: dict[str, dict] = {}
         self.grasses: dict[str, dict] = {}
         self.bottom_bound: int = 500
+        self.tile_metadata: dict[str, dict] = {}
 
         self.player: dict = {"indexes": (0, 0), "coord": (self.tilesize // 2, self.tilesize)}
 
@@ -36,12 +37,28 @@ class TileMap(Camera):
     def get_tile(self, indexes: tuple[int, int]) -> dict | None:
         return self.tiles.get(self.get_tile_key(indexes), None)
 
-
     def delete_tile(self, indexes: tuple[int, int]) -> None:
         tile_key = self.get_tile_key(indexes)
 
         if tile_key in self.tiles:
             del self.tiles[tile_key]
+
+    def set_tile_metadata(self, indexes: tuple[int, int], text: str) -> None:
+        tile_obj = {
+            "indexes": indexes,
+            "text": text,
+        }
+
+        self.tile_metadata[self.get_tile_key(indexes)] = tile_obj
+
+    def get_tile_metadata(self, indexes: tuple[int, int]) -> dict | None:
+        return self.tile_metadata.get(self.get_tile_key(indexes), None)
+
+    def delete_tile_metadata(self, indexes: tuple[int, int]) -> None:
+        tile_key = self.get_tile_key(indexes)
+
+        if tile_key in self.tile_metadata:
+            del self.tile_metadata[tile_key]
 
         
     def set_enemy(self, indexes: tuple[int, int]) -> None:
@@ -113,6 +130,7 @@ class TileMap(Camera):
         self.enemies = map_obj.get("enemies", {})
         self.grasses = map_obj.get("grasses", {})
         self.bottom_bound = map_obj.get("bottom_bound", 500)
+        self.tile_metadata = map_obj.get("tile_metadata", {})
         
         player = map_obj.get("player", None)
 
@@ -127,6 +145,7 @@ class TileMap(Camera):
             "enemies": self.enemies,
             "grasses": self.grasses,
             "bottom_bound": self.bottom_bound,
+            "tile_metadata": self.tile_metadata,
             "player": self.player
         }
 

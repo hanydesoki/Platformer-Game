@@ -6,6 +6,7 @@ import pygame
 from .tilemap import TileMap
 from .utils import load_tile_assets
 from .camera import Camera
+from .popup import get_text_input
 
 
 class LevelEditor(Camera):
@@ -175,6 +176,7 @@ class LevelEditor(Camera):
         
         left_click: bool = False
         right_click: bool = False
+        mid_click: bool = False
 
         key_pressed = pygame.key.get_pressed()
 
@@ -232,6 +234,8 @@ class LevelEditor(Camera):
                 mouse_pressed = pygame.mouse.get_pressed()
                 if mouse_pressed[0]:
                     left_click = True
+                elif mouse_pressed[1]:
+                    mid_click = True
                 elif mouse_pressed[2]:
                     right_click = True
 
@@ -290,8 +294,17 @@ class LevelEditor(Camera):
                     self.tilemap.delete_grass(
                         self.coord_to_indexes(pygame.mouse.get_pos()),
                     )
+                    self.tilemap.delete_tile_metadata(
+                        self.coord_to_indexes(pygame.mouse.get_pos()),
+                    )
 
-                # print(self.tilemap.tiles)
+            if mid_click:
+                indexes = self.coord_to_indexes(pygame.mouse.get_pos())
+
+                text_metadata: str | None = get_text_input(f"Text metadata for {indexes}:")
+
+                if text_metadata:
+                    self.tilemap.set_tile_metadata(indexes, text_metadata)
 
 
     def get_current_tile(self) -> pygame.Surface:
@@ -304,6 +317,7 @@ class LevelEditor(Camera):
         number_rows: int = int(self.display.get_height() // self.tilesize) + 1
         number_cols: int = int(self.display.get_width() // self.tilesize) + 1
 
+        # Draw grid
         for i in range(number_rows):
             pygame.draw.line(
                 self.display,
@@ -456,6 +470,34 @@ class LevelEditor(Camera):
 
         self.tilemap.save_tiles(self.filepath)
 
+    def draw_metadata(self) -> None:
+        mouse_indexes = self.coord_to_indexes(pygame.mouse.get_pos())
+
+        for metadata in self.tilemap.tile_metadata.values():
+            pygame.draw.rect(
+                self.display,
+                "orange",
+                (
+                    *self.convert_pos((metadata["indexes"][0] * self.tilesize, metadata["indexes"][1] * self.tilesize)),
+                    self.tilesize,
+                    self.tilesize
+                ),
+                1
+            )
+
+            if mouse_indexes == tuple(metadata["indexes"]):
+                text_surf: pygame.Surface = self.debugguer_font.render(metadata["text"], True, "white")
+
+                text_rect = text_surf.get_rect(midbottom=(
+                    metadata["indexes"][0] * self.tilesize,
+                    metadata["indexes"][1] * self.tilesize
+                ))
+
+                self.display.blit(
+                    text_surf,
+                    self.convert_pos(text_rect.topleft)
+                )
+
     def run(self) -> None:
         
         while self.game_loop:
@@ -522,6 +564,8 @@ class LevelEditor(Camera):
                 self.display.blit(current_tile, mouse_rect)
             else:
                 self.draw_selection()
+
+            self.draw_metadata()
 
             self.draw_debugger()
 
