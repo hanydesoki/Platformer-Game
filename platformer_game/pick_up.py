@@ -70,7 +70,7 @@ class PickUp(Camera):
             else:
                 self.y = tile_rect.bottom
 
-            self.y_vel *= -0.8
+            self.y_vel *= -0.5
 
             if abs(self.y_vel) <= 0.5:
                 self.y_vel = 0
@@ -82,7 +82,7 @@ class PickUp(Camera):
         if self.x_vel:
             self.x_vel += 0.1 if self.x_vel < 0 else -0.1
 
-        if abs(self.x_vel) < 0.4:
+        if abs(self.x_vel) < 0.01:
             self.x_vel = 0
 
         self.x += self.x_vel

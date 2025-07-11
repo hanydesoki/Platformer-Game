@@ -49,10 +49,17 @@ class LevelSelection:
             (self.window.get_width() // 2 - 20, self.window.get_height() - 60)
         )
 
+        self.cursor_surf: pygame.Surface = pygame.image.load(
+            os.path.join("Assets", "Other", "cursor.png")
+        )
+
+        self.cursor_surf.set_colorkey("black")
+
         self.game_loop: bool = True
 
         self.clock = pygame.time.Clock()
 
+        pygame.mouse.set_visible(False)
         
 
     def generate_level_set_menu(self) -> None:
@@ -130,7 +137,9 @@ class LevelSelection:
 
         
         if self.add_button.clicked():
+            pygame.mouse.set_visible(True)
             text = get_text_input("Level set name" if self.selected_level_set is None else "Level name")
+            pygame.mouse.set_visible(False)
             if text is None:
                 return
             
@@ -193,7 +202,10 @@ class LevelSelection:
 
         self.manage_level_selection(all_events)
         self.draw_level_menu()
-
+        self.window.blit(
+            self.cursor_surf,
+            pygame.mouse.get_pos()
+        )
         
 
     def run(self) -> None:

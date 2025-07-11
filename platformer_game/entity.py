@@ -81,7 +81,11 @@ class Entity(Camera):
                 surf
             )
 
-            pickup.x_vel = -self.x_vel / abs(self.x_vel) * random.random() * 4 if self.x_vel != 0 else -3
+            pickup.x_vel = (
+                -self.x_vel / abs(self.x_vel) * random.random() * 4 
+                if self.x_vel != 0
+                else -3 if self.flip else 3
+            )
             pickup.y_vel = -4 * random.random()
 
             pickup.content = self.weapon

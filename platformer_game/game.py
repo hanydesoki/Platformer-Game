@@ -68,75 +68,17 @@ class Game:
         self.tilemap = TileMap(self.display, assets=self.assets, tilesize=36)
 
         self.tilemap.load_tiles(self.level_path)
+        self.player: Player = None
 
-        self.player = Player(self.display, self.tilemap.player["coord"], self, self.animations["Player/Idle"].copy())
+        # self.player = Player(self.display, self.tilemap.player["coord"], self, self.animations["Player/Idle"].copy())
         
         self.bullets: list[Bullet] = []
         
-
-        self.enemies: list[Enemy] = [
-            Enemy(self.display, enemy["coord"], self, self.animations["Enemy/Idle"].copy())
-            for enemy in self.tilemap.enemies.values()
-        ]
-
+        self.enemies: list[Enemy] = []
         self.grasses: dict[str, list[GrassBlade]] = {}
-
-        for tile_key, grass_obj in self.tilemap.grasses.items():
-            x, y = grass_obj["coord"]
-            self.grasses[tile_key] = []
-            for _ in range(random.randint(4, 10)):
-                grass_blade = GrassBlade(
-                    self.display,
-                    self,
-                    (
-                        x + random.randint(3, self.tilemap.tilesize - 3),
-                        y + self.tilemap.tilesize
-                    )
-                )
-                self.grasses[tile_key].append(grass_blade)
-
-        # print(self.grasses)
 
         self.weapon_pickups: list[PickUp] = []
         self.pickups: list[PickUp] = []
-
-        for metadata in self.tilemap.tile_metadata.values():
-            if metadata["text"].startswith("weapon___"):
-                weapon_name = metadata["text"].split("___")[-1]
-                weapon = self.weapons[weapon_name](self, None)
-                weapon_surf = pygame.transform.rotozoom(self.assets["weapons"][weapon_name], 0, 0.4)
-
-                weapon_surf.set_colorkey("black")
-
-                pickup = PickUp(
-                    self,
-                    (metadata["indexes"][0] * self.tilemap.tilesize, metadata["indexes"][1] * self.tilemap.tilesize),
-                    weapon_surf
-                )
-
-                pickup.content = weapon
-
-                self.weapon_pickups.append(pickup)
-
-            if metadata["text"].startswith("pickup___"):
-                pickup_name = metadata["text"].split("___")[-1]
-
-                if pickup_name == "health":
-                    pickup_surf = pygame.transform.rotozoom(self.assets["pickups"][pickup_name], 0, 0.8)
-                    pickup_surf.set_colorkey("black")
-                    pickup = PickUp(
-                        self,
-                        (metadata["indexes"][0] * self.tilemap.tilesize, metadata["indexes"][1] * self.tilemap.tilesize),
-                        pickup_surf
-                    )
-
-                    pickup.content = {
-                        "type": "health",
-                        "amount": 1
-                    }
-
-                    self.pickups.append(pickup)
-
 
         self.impacts: list[Impact] = []
 
@@ -160,6 +102,8 @@ class Game:
 
         self.clouds.sort(key=lambda c: c.depth)
 
+        self.load_level(self.level_path)
+
         
 
     def load_level(self, level_path: str) -> None:
@@ -169,13 +113,24 @@ class Game:
         
         Camera.offset_x = self.player.rect.centerx - self.tilemap.surface.get_width() // 4
         Camera.offset_y = self.player.rect.centery - self.tilemap.surface.get_height() // 4
-        self.bullets: list[Bullet] = []
-        
+        self.bullets.clear()
 
-        self.enemies: list[Enemy] = [
-            Enemy(self.display, enemy["coord"], self, self.animations["Enemy/Idle"].copy())
-            for enemy in self.tilemap.enemies.values()
-        ]
+        self.enemies.clear()
+
+        for tile_key, enemy in self.tilemap.enemies.items():
+            enemy = Enemy(self.display, enemy["coord"], self, self.animations["Enemy/Idle"].copy())
+            
+            metadata = self.tilemap.tile_metadata.get(tile_key, None)
+
+            if metadata is not None:
+                if metadata["text"].startswith("enemy_weapon"):
+                    weapon_name = metadata["text"].split("___")[-1]
+
+                    enemy_weapon = self.weapons[weapon_name](self, enemy)
+
+                    enemy.set_weapon(enemy_weapon)
+
+            self.enemies.append(enemy)
 
         self.grasses: dict[str, list[GrassBlade]] = {}
 
@@ -195,8 +150,8 @@ class Game:
 
         # print(self.grasses)
 
-        self.weapon_pickups: list[PickUp] = []
-        self.pickups: list[PickUp] = []
+        self.weapon_pickups.clear()
+        self.pickups.clear()
 
         for metadata in self.tilemap.tile_metadata.values():
             if metadata["text"].startswith("weapon___"):
@@ -234,7 +189,7 @@ class Game:
 
                     self.pickups.append(pickup)
 
-        self.impacts: list[Impact] = []
+        self.impacts.clear()
 
     def load_assets(self, asset_path: str) -> None:
         self.assets = {}
@@ -535,6 +490,8 @@ class Game:
             all_events: list[pygame.event.Event] = pygame.event.get()
             key_pressed = pygame.key.get_pressed()
 
+            mouse_pos = pygame.mouse.get_pos()
+
             for event in all_events:
                 if event.type == pygame.QUIT:
                     self.game_loop = False
@@ -567,6 +524,14 @@ class Game:
 
             self.tilemap.draw_tiles()
             self.manage_game_over()
+            
+            # Draw cursor
+            pygame.draw.circle(
+                self.display,
+                (150, 0, 0),
+                (int(mouse_pos[0] / 2), int(mouse_pos[1] / 2)),
+                3
+            )
             
             self.window.blit(
                 pygame.transform.scale(self.display, (self.disp_size[0] * 2, self.disp_size[1] * 2)), 

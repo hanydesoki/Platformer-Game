@@ -103,6 +103,12 @@ class LevelEditor(Camera):
         self.grass_surf.set_alpha(150)
         self.grass_surf.set_colorkey("black")
 
+        self.cursor_surf: pygame.Surface = pygame.image.load(
+            os.path.join("Assets", "Other", "cursor.png")
+        )
+
+        self.cursor_surf.set_colorkey("black")
+
 
     def switch_selection_mode(self) -> None:
 
@@ -300,9 +306,9 @@ class LevelEditor(Camera):
 
             if mid_click:
                 indexes = self.coord_to_indexes(pygame.mouse.get_pos())
-
+                pygame.mouse.set_visible(True)
                 text_metadata: str | None = get_text_input(f"Text metadata for {indexes}:")
-
+                pygame.mouse.set_visible(False)
                 if text_metadata:
                     self.tilemap.set_tile_metadata(indexes, text_metadata)
 
@@ -568,6 +574,11 @@ class LevelEditor(Camera):
             self.draw_metadata()
 
             self.draw_debugger()
+
+            self.display.blit(
+                self.cursor_surf,
+                pygame.mouse.get_pos()
+            )
 
             self.window.blit(self.display, (0, 0))
 
