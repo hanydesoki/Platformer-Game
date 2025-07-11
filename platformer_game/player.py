@@ -139,6 +139,7 @@ class Player(Entity):
             width=3
         )
 
+        # Draw weapon
         if self.weapon is not None:
             angle = -math.degrees(math.atan2(self.y_comp, self.x_comp))
             surf: pygame.Surface = self.game.assets["weapons"][self.weapon.weapon_name]

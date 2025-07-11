@@ -107,6 +107,7 @@ class Entity(Camera):
                 speed=(0.5, 3)
             )
             Camera.shake_screen(10)
+            self.drop_weapon()
 
     def heal(self, amount: int = 1) -> None:
         self.hp = min(self.hp + amount, self.max_hp)

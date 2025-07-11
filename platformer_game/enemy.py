@@ -187,6 +187,29 @@ class Enemy(Entity):
             width=3
         )
 
+        # Draw weapon
+        if self.weapon is not None:
+            angle = -math.degrees(math.atan2(self.y_comp, self.x_comp))
+            surf: pygame.Surface = self.game.assets["weapons"][self.weapon.weapon_name]
+            surf = pygame.transform.flip(
+                surf,
+                self.x_comp < 0,
+                False
+            )
+            surf.set_colorkey("white")
+            surf = pygame.transform.rotozoom(
+                surf,
+                (angle + 90) % 180 - 90,
+                0.3
+            )
+            
+            surf.set_colorkey("black")
+
+            self.surface.blit(
+                surf,
+                self.convert_pos((start_pos[0] + self.x_comp * 10 - surf.get_width() // 2, start_pos[1] + self.y_comp * 10 - surf.get_height() // 2))
+            )
+
 
     def update(self):
         if self.alive:
